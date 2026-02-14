@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maryana Breitman, PhD, MBA | Biotech & Pharma Strategy Consultant</title>
+    <meta name="description" content="Strategic consulting in biotechnology and pharmaceutical industries. 20+ years of experience in M&A, corporate strategy, and innovation.">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold: #C4A265;
+            --gold-light: #D4B98A;
+            --gold-dark: #A8873E;
+            --charcoal: #2C2C2C;
+            --charcoal-light: #4A4A4A;
+            --cream: #FAF7F2;
+            --cream-dark: #F0EBE1;
+            --white: #FFFFFF;
+            --text: #3A3A3A;
+            --text-light: #6B6B6B;
+            --border: #E8E2D8;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            background: var(--cream);
+            line-height: 1.7;
+            font-weight: 300;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 600;
+            color: var(--charcoal);
+        }
+
+        /* ── Navigation ── */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+            background: rgba(250, 247, 242, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            transition: box-shadow 0.3s ease;
+        }
+
+        nav.scrolled {
+            box-shadow: 0 2px 20px rgba(0,0,0,0.06);
+        }
+
+        .nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 72px;
+        }
+
+        .nav-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--charcoal);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+        }
+
+        .nav-logo span {
+            color: var(--gold);
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-light);
+            font-size: 0.85rem;
+            font-weight: 400;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--gold);
+        }
+
+        .nav-toggle {
+            display: none;
+            flex-direction: column;
+            cursor: pointer;
+            gap: 5px;
+        }
+
+        .nav-toggle span {
+            width: 24px;
+            height: 2px;
+            background: var(--charcoal);
+            transition: 0.3s ease;
+        }
+
+        /* ── Hero ── */
+        .hero {
+            min-height: auto;
+            display: flex;
+            align-items: center;
+            padding: 110px 2rem 60px;
+            background: linear-gradient(135deg, var(--cream) 0%, var(--cream-dark) 50%, var(--cream) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 800px;
+            height: 800px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(196, 162, 101, 0.06) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .hero-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        .hero-text {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeUp 0.8s ease forwards 0.3s;
+        }
+
+        .hero-label {
+            font-size: 0.8rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 1rem;
+            font-weight: 500;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            line-height: 1.15;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .hero h1 em {
+            font-style: italic;
+            color: var(--gold);
+            font-weight: 400;
+        }
+
+        .hero-subtitle {
+            font-size: 1.05rem;
+            color: var(--text-light);
+            margin-bottom: 2rem;
+            max-width: 480px;
+            line-height: 1.8;
+        }
+
+        .hero-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 2.5rem;
+            background: var(--gold);
+            color: var(--white);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .hero-cta:hover {
+            background: var(--gold-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(196, 162, 101, 0.3);
+        }
+
+        .hero-cta svg {
+            width: 16px;
+            height: 16px;
+            transition: transform 0.3s ease;
+        }
+
+        .hero-cta:hover svg {
+            transform: translateX(4px);
+        }
+
+        .hero-image {
+            display: flex;
+            justify-content: center;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeUp 0.8s ease forwards 0.5s;
+        }
+
+        .hero-photo {
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+        }
+
+        .hero-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .hero-photo::after {
+            display: none;
+        }
+
+        /* ── Sections ── */
+        .section {
+            padding: 60px 2rem;
+        }
+
+        .section-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .section-label {
+            font-size: 0.75rem;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--gold);
+            font-weight: 500;
+            margin-bottom: 1rem;
+        }
+
+        .section-header h2 {
+            font-size: 2rem;
+            letter-spacing: -0.02em;
+            margin-bottom: 1rem;
+        }
+
+        .section-header p {
+            color: var(--text-light);
+            max-width: 600px;
+            margin: 0 auto;
+            font-size: 1.05rem;
+        }
+
+        .section-divider {
+            width: 50px;
+            height: 2px;
+            background: var(--gold);
+            margin: 1.5rem auto 0;
+        }
+
+        /* ── About ── */
+        .about {
+            background: var(--white);
+        }
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: center;
+        }
+
+        .about-text p {
+            margin-bottom: 1rem;
+            color: var(--text-light);
+            font-size: 1.02rem;
+        }
+
+        .about-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .stat {
+            text-align: center;
+            padding: 1.2rem;
+            background: var(--cream);
+            border-radius: 4px;
+        }
+
+        .stat-number {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            color: var(--gold);
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-top: 0.5rem;
+        }
+
+        /* ── Services ── */
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+        }
+
+        .service-card {
+            padding: 1.75rem 1.5rem;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            transition: all 0.4s ease;
+            text-align: center;
+        }
+
+        .service-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.06);
+            border-color: var(--gold-light);
+        }
+
+        .service-icon {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 1rem;
+            background: var(--cream);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .service-icon svg {
+            width: 24px;
+            height: 24px;
+            stroke: var(--gold);
+            fill: none;
+            stroke-width: 1.5;
+        }
+
+        .service-card h3 {
+            font-size: 1.05rem;
+            margin-bottom: 0.6rem;
+            letter-spacing: -0.01em;
+        }
+
+        .service-card p {
+            color: var(--text-light);
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+
+        /* ── Experience ── */
+        .experience {
+            background: var(--white);
+        }
+
+        .timeline {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 1px;
+            background: var(--border);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 2.5rem;
+            padding-bottom: 2rem;
+        }
+
+        .timeline-item:last-child {
+            padding-bottom: 0;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -4px;
+            top: 6px;
+            width: 9px;
+            height: 9px;
+            background: var(--gold);
+            border-radius: 50%;
+        }
+
+        .timeline-period {
+            font-size: 0.78rem;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            font-weight: 500;
+            margin-bottom: 0.4rem;
+        }
+
+        .timeline-item h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .timeline-company {
+            font-size: 0.95rem;
+            color: var(--text-light);
+            font-weight: 400;
+            margin-bottom: 0.75rem;
+        }
+
+        .timeline-item p {
+            color: var(--text-light);
+            font-size: 0.92rem;
+        }
+
+        .timeline-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .timeline-tag {
+            font-size: 0.72rem;
+            padding: 0.3rem 0.8rem;
+            background: var(--cream);
+            border-radius: 20px;
+            color: var(--text-light);
+            letter-spacing: 0.03em;
+        }
+
+        /* ── Education ── */
+        .education-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .edu-card {
+            padding: 1.75rem;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .edu-card:hover {
+            border-color: var(--gold-light);
+        }
+
+        .edu-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .edu-degree {
+            color: var(--gold);
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .edu-detail {
+            color: var(--text-light);
+            font-size: 0.88rem;
+        }
+
+        .credentials {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .credentials h3 {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .credentials p {
+            color: var(--text-light);
+            font-size: 0.92rem;
+        }
+
+        .languages {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1.5rem;
+        }
+
+        .lang-badge {
+            padding: 0.4rem 1.2rem;
+            background: var(--cream);
+            border-radius: 20px;
+            font-size: 0.82rem;
+            color: var(--text-light);
+        }
+
+        /* ── Publications ── */
+        .publications {
+            background: var(--white);
+        }
+
+        .pub-list {
+            max-width: 800px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .pub-item {
+            padding: 1.5rem;
+            background: var(--cream);
+            border-left: 3px solid var(--gold);
+            border-radius: 0 4px 4px 0;
+            transition: all 0.3s ease;
+        }
+
+        .pub-item:hover {
+            transform: translateX(4px);
+        }
+
+        .pub-type {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--gold);
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .pub-item h3 {
+            font-size: 1.05rem;
+            line-height: 1.5;
+            margin-bottom: 0.5rem;
+        }
+
+        .pub-item p {
+            color: var(--text-light);
+            font-size: 0.88rem;
+        }
+
+        /* ── Testimonials ── */
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .testimonial-card {
+            padding: 1.75rem;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .testimonial-quote {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            color: var(--gold-light);
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .testimonial-card p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            font-style: italic;
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+        }
+
+        .testimonial-author {
+            font-weight: 500;
+            font-size: 0.88rem;
+            color: var(--charcoal);
+        }
+
+        .testimonial-role {
+            font-size: 0.8rem;
+            color: var(--text-light);
+        }
+
+        /* ── Contact ── */
+        .contact {
+            background: var(--charcoal);
+            color: var(--cream);
+        }
+
+        .contact .section-label {
+            color: var(--gold-light);
+        }
+
+        .contact .section-header h2 {
+            color: var(--cream);
+        }
+
+        .contact .section-header p {
+            color: rgba(250, 247, 242, 0.6);
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .contact-info h3 {
+            color: var(--cream);
+            font-size: 1.3rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .contact-item svg {
+            width: 20px;
+            height: 20px;
+            stroke: var(--gold);
+            fill: none;
+            stroke-width: 1.5;
+            flex-shrink: 0;
+        }
+
+        .contact-item a {
+            color: rgba(250, 247, 242, 0.8);
+            text-decoration: none;
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+        }
+
+        .contact-item a:hover {
+            color: var(--gold-light);
+        }
+
+        .contact-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 2px;
+            color: var(--cream);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 300;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input::placeholder,
+        .form-group textarea::placeholder {
+            color: rgba(250, 247, 242, 0.35);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--gold);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .form-submit {
+            padding: 1rem 2.5rem;
+            background: var(--gold);
+            color: var(--white);
+            border: none;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            cursor: pointer;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+            align-self: flex-start;
+        }
+
+        .form-submit:hover {
+            background: var(--gold-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(196, 162, 101, 0.3);
+        }
+
+        /* ── Footer ── */
+        footer {
+            background: var(--charcoal);
+            border-top: 1px solid rgba(255,255,255,0.06);
+            padding: 2rem;
+            text-align: center;
+        }
+
+        footer p {
+            color: rgba(250, 247, 242, 0.4);
+            font-size: 0.8rem;
+        }
+
+        /* ── Animations ── */
+        @keyframes fadeUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            opacity: 0;
+            transform: translateY(25px);
+            transition: all 0.6s ease;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 1024px) {
+            .services-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 72px;
+                left: 0;
+                right: 0;
+                background: var(--cream);
+                flex-direction: column;
+                padding: 2rem;
+                gap: 1.5rem;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .nav-toggle {
+                display: flex;
+            }
+
+            .hero-inner {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero-subtitle {
+                margin: 0 auto 2.5rem;
+            }
+
+            .hero-photo {
+                width: 260px;
+                height: 260px;
+            }
+
+            .about-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .services-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .education-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .testimonials-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .contact-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .section {
+                padding: 50px 1.5rem;
+            }
+
+            .section-header h2 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav id="navbar">
+        <div class="nav-inner">
+            <a href="#" class="nav-logo">MB<span>.</span></a>
+            <ul class="nav-links" id="navLinks">
+                <li><a href="#about">About</a></li>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#experience">Experience</a></li>
+                <li><a href="#publications">Publications</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <div class="nav-toggle" id="navToggle" onclick="toggleNav()">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-inner">
+            <div class="hero-text">
+                <div class="hero-label">Strategy &bull; Innovation &bull; Biotech</div>
+                <h1>Maryana<br>Breitman,<br><em>PhD, MBA</em></h1>
+                <p class="hero-subtitle">
+                    Strategic advisor to biotechnology and pharmaceutical companies navigating complex transactions, growth strategies, and innovation challenges.
+                </p>
+                <a href="#contact" class="hero-cta">
+                    Start a Conversation
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
+            </div>
+            <div class="hero-image">
+                <div class="hero-photo">
+                    <img src="headshot.png" alt="Maryana Breitman">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About -->
+    <section class="about section" id="about">
+        <div class="section-inner">
+            <div class="about-grid">
+                <div class="fade-in">
+                    <div class="section-label">About</div>
+                    <h2 style="font-size:1.8rem; margin-bottom:1rem;">Two Decades of Shaping<br>Biotech Strategy</h2>
+                    <div class="about-text">
+                        <p>
+                            With over 20 years of experience at the intersection of biotechnology, pharmaceuticals, and finance, I bring a rare combination of scientific rigor and business acumen to every engagement.
+                        </p>
+                        <p>
+                            My career spans leadership roles at Pfizer, equity research at Goldman Sachs and UBS, and entrepreneurial ventures in biotech. This unique perspective allows me to bridge the gap between scientific innovation and strategic business outcomes.
+                        </p>
+                        <p>
+                            I specialize in helping organizations navigate high-stakes decisions&mdash;from M&amp;A integration and corporate strategy to launching novel therapeutic programs in competitive markets.
+                        </p>
+                    </div>
+                </div>
+                <div class="fade-in">
+                    <div class="about-stats">
+                        <div class="stat">
+                            <div class="stat-number">20+</div>
+                            <div class="stat-label">Years Experience</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number">3</div>
+                            <div class="stat-label">Languages</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number">PhD</div>
+                            <div class="stat-label">Molecular Biology</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-number">MBA</div>
+                            <div class="stat-label">Columbia Business</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services -->
+    <section class="section" id="services">
+        <div class="section-inner">
+            <div class="section-header fade-in">
+                <div class="section-label">Services</div>
+                <h2>How I Can Help</h2>
+                <p>Tailored strategic counsel for organizations seeking to grow, transform, and compete in the life sciences sector.</p>
+                <div class="section-divider"></div>
+            </div>
+            <div class="services-grid">
+                <div class="service-card fade-in">
+                    <div class="service-icon">
+                        <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                    </div>
+                    <h3>Corporate Strategy</h3>
+                    <p>Portfolio optimization, competitive positioning, and long-range strategic planning for biotech and pharma companies.</p>
+                </div>
+                <div class="service-card fade-in">
+                    <div class="service-icon">
+                        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
+                    <h3>M&A Advisory</h3>
+                    <p>Due diligence, deal structuring, integration planning, and post-merger value creation in the life sciences space.</p>
+                </div>
+                <div class="service-card fade-in">
+                    <div class="service-icon">
+                        <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                    </div>
+                    <h3>Innovation &amp; R&D</h3>
+                    <p>Pipeline assessment, therapeutic area strategy, and translating scientific breakthroughs into commercial opportunities.</p>
+                </div>
+                <div class="service-card fade-in">
+                    <div class="service-icon">
+                        <svg viewBox="0 0 24 24"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
+                    </div>
+                    <h3>Investor Relations</h3>
+                    <p>Equity story development, investor communications, and capital markets strategy grounded in deep sector expertise.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Experience -->
+    <section class="experience section" id="experience">
+        <div class="section-inner">
+            <div class="section-header fade-in">
+                <div class="section-label">Experience</div>
+                <h2>Career Highlights</h2>
+                <p>A track record of leadership across Wall Street, Big Pharma, and entrepreneurial biotech ventures.</p>
+                <div class="section-divider"></div>
+            </div>
+            <div class="timeline fade-in">
+                <div class="timeline-item">
+                    <div class="timeline-period">Current</div>
+                    <h3>Director, Strategy &amp; Innovation</h3>
+                    <div class="timeline-company">Pfizer &mdash; New York, NY</div>
+                    <p>Leading strategic initiatives in one of the world's largest pharmaceutical companies, driving corporate strategy across multiple therapeutic areas.</p>
+                    <div class="timeline-tags">
+                        <span class="timeline-tag">Pharmaceuticals</span>
+                        <span class="timeline-tag">Strategy</span>
+                        <span class="timeline-tag">Innovation</span>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-period">Previous</div>
+                    <h3>Biotechnology Equity Research</h3>
+                    <div class="timeline-company">Goldman Sachs</div>
+                    <p>Covered biotechnology equities, providing institutional investors with deep analytical insights on therapeutic pipelines, clinical data, and market dynamics.</p>
+                    <div class="timeline-tags">
+                        <span class="timeline-tag">Equity Research</span>
+                        <span class="timeline-tag">Biotech</span>
+                        <span class="timeline-tag">Capital Markets</span>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-period">Previous</div>
+                    <h3>Biotechnology Equity Research</h3>
+                    <div class="timeline-company">UBS</div>
+                    <p>Conducted rigorous financial analysis and company valuations across the biotechnology sector for global institutional clients.</p>
+                    <div class="timeline-tags">
+                        <span class="timeline-tag">Pharmaceuticals</span>
+                        <span class="timeline-tag">Strategy</span>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-period">Founder</div>
+                    <h3>Founder &amp; CEO</h3>
+                    <div class="timeline-company">NAIAX Bio Inc.</div>
+                    <p>Founded and led an early-stage biotechnology company, advancing novel therapeutic approaches from bench to preclinical development.</p>
+                    <div class="timeline-tags">
+                        <span class="timeline-tag">Entrepreneurship</span>
+                        <span class="timeline-tag">Drug Development</span>
+                        <span class="timeline-tag">Leadership</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Education -->
+    <section class="section" id="education">
+        <div class="section-inner">
+            <div class="section-header fade-in">
+                <div class="section-label">Education &amp; Credentials</div>
+                <h2>Academic Foundation</h2>
+                <div class="section-divider"></div>
+            </div>
+            <div class="education-grid fade-in">
+                <div class="edu-card">
+                    <h3>Columbia Business School</h3>
+                    <div class="edu-degree">Master of Business Administration</div>
+                    <div class="edu-detail">Finance &amp; Financial Management Services<br>Private Equity/Venture Capital Club, Healthcare Association</div>
+                </div>
+                <div class="edu-card">
+                    <h3>Princeton University</h3>
+                    <div class="edu-degree">Bachelor of Arts</div>
+                    <div class="edu-detail">Molecular Biology<br>Art History</div>
+                </div>
+            </div>
+            <div class="credentials fade-in">
+                <h3>Licenses &amp; Certifications</h3>
+                <p>FINRA Series 7, 63, 66, 87</p>
+                <h3 style="margin-top:2rem;">Languages</h3>
+                <div class="languages">
+                    <span class="lang-badge">English</span>
+                    <span class="lang-badge">French</span>
+                    <span class="lang-badge">German</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Publications -->
+    <section class="publications section" id="publications">
+        <div class="section-inner">
+            <div class="section-header fade-in">
+                <div class="section-label">Publications &amp; Thought Leadership</div>
+                <h2>Research &amp; Insights</h2>
+                <p>Selected publications and contributions to the field.</p>
+                <div class="section-divider"></div>
+            </div>
+            <div class="pub-list fade-in">
+                <div class="pub-item">
+                    <div class="pub-type">Research Publication</div>
+                    <h3>A Structure-Based Mechanism for Ar-1 Dependent Recruitment of Customer to Vertebrates</h3>
+                    <p>Co-authored research exploring structural mechanisms in vertebrate biology, contributing to foundational understanding of receptor dynamics.</p>
+                </div>
+                <div class="pub-item">
+                    <div class="pub-type">Industry Commentary</div>
+                    <h3>Solving the Last Mile Gap in US Healthcare</h3>
+                    <p>Analysis of systemic challenges in US healthcare delivery and strategic approaches to bridging gaps in patient access.</p>
+                </div>
+                <div class="pub-item">
+                    <div class="pub-type">Strategic Insight</div>
+                    <h3>Building GPI-Coated Vesicles from Golgi Membranes</h3>
+                    <p>Scientific research on cellular mechanisms with implications for drug delivery and therapeutic development.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="section" id="testimonials">
+        <div class="section-inner">
+            <div class="section-header fade-in">
+                <div class="section-label">Testimonials</div>
+                <h2>What Colleagues Say</h2>
+                <div class="section-divider"></div>
+            </div>
+            <div class="testimonials-grid fade-in">
+                <div class="testimonial-card">
+                    <div class="testimonial-quote">&ldquo;</div>
+                    <p>Maryana brings an unmatched combination of scientific depth and strategic vision. Her ability to translate complex biotech landscapes into actionable strategies is extraordinary.</p>
+                    <div class="testimonial-author">Senior Executive</div>
+                    <div class="testimonial-role">Pharmaceutical Industry</div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-quote">&ldquo;</div>
+                    <p>A rare talent who understands both the science and the business. Her M&amp;A advisory work was instrumental in driving our acquisition strategy forward with confidence.</p>
+                    <div class="testimonial-author">Managing Director</div>
+                    <div class="testimonial-role">Investment Banking</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact -->
+    <section class="contact section" id="contact">
+        <div class="section-inner">
+            <div class="section-header fade-in">
+                <div class="section-label">Get in Touch</div>
+                <h2>Let&rsquo;s Work Together</h2>
+                <p>Ready to discuss how strategic advisory can accelerate your organization&rsquo;s growth? I&rsquo;d love to hear from you.</p>
+                <div class="section-divider"></div>
+            </div>
+            <div class="contact-grid fade-in">
+                <div class="contact-info">
+                    <h3>Contact Information</h3>
+                    <div class="contact-item">
+                        <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                        <a href="mailto:contact@maryanabreitman.com">contact@maryanabreitman.com</a>
+                    </div>
+                    <div class="contact-item">
+                        <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                        <a href="#">New York, New York</a>
+                    </div>
+                    <div class="contact-item">
+                        <svg viewBox="0 0 24 24"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+                        <a href="https://www.linkedin.com/in/maryana-breitman-phd-mba-4986a810/" target="_blank" rel="noopener">LinkedIn Profile</a>
+                    </div>
+                </div>
+                <form class="contact-form" onsubmit="handleSubmit(event)">
+                    <div class="form-group">
+                        <input type="text" placeholder="Your Name" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="email" placeholder="Your Email" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" placeholder="Subject">
+                    </div>
+                    <div class="form-group">
+                        <textarea placeholder="Tell me about your project or inquiry..." required></textarea>
+                    </div>
+                    <button type="submit" class="form-submit">Send Message</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 Maryana Breitman. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Mobile nav toggle
+        function toggleNav() {
+            document.getElementById('navLinks').classList.toggle('active');
+        }
+
+        // Navbar scroll effect
+        window.addEventListener('scroll', () => {
+            const nav = document.getElementById('navbar');
+            nav.classList.toggle('scrolled', window.scrollY > 50);
+        });
+
+        // Scroll animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+
+        // Form handler
+        function handleSubmit(e) {
+            e.preventDefault();
+            alert('Thank you for your message! I will get back to you shortly.');
+            e.target.reset();
+        }
+
+        // Close mobile nav on link click
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.getElementById('navLinks').classList.remove('active');
+            });
+        });
+    </script>
+
+</body>
+</html>
