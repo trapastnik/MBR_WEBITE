@@ -1,39 +1,41 @@
 /**
- * Biotech Molecular Network — animated canvas background
+ * Molecular DNA Background — animated canvas
  * Only active when data-theme="academic" is set on <html>
  */
 (function () {
   'use strict';
 
   var canvas, ctx, animId;
-  var particles = [];
-  var hexagons = [];
-  var helixPhase = 0;
   var W, H;
-  var PARTICLE_COUNT = 55;
-  var HEXAGON_COUNT = 8;
-  var CONNECTION_DIST = 160;
+  var time = 0;
 
-  // Academic blue palette
-  var COLORS = [
-    'rgba(26, 82, 118, 0.35)',   // deep blue
-    'rgba(46, 134, 193, 0.3)',   // medium blue
-    'rgba(133, 193, 233, 0.25)', // light blue
-    'rgba(40, 116, 166, 0.3)',   // teal blue
-  ];
+  // Molecule nodes (atoms)
+  var atoms = [];
+  var ATOM_COUNT = 70;
+  var BOND_DIST = 140;
 
-  var LINE_COLOR = 'rgba(46, 134, 193, 0.08)';
-  var HELIX_COLOR_1 = 'rgba(26, 82, 118, 0.06)';
-  var HELIX_COLOR_2 = 'rgba(133, 193, 233, 0.05)';
+  // Floating molecules (small rigid structures)
+  var molecules = [];
+  var MOL_COUNT = 6;
+
+  // Colors
+  var BLUE_DEEP = 'rgba(26, 82, 118, ';
+  var BLUE_MED = 'rgba(46, 134, 193, ';
+  var BLUE_LIGHT = 'rgba(133, 193, 233, ';
+  var TEAL = 'rgba(40, 116, 166, ';
 
   function init() {
     canvas = document.getElementById('biotech-canvas');
     if (!canvas) return;
     ctx = canvas.getContext('2d');
     resize();
-    createParticles();
-    createHexagons();
-    window.addEventListener('resize', resize);
+    createAtoms();
+    createMolecules();
+    window.addEventListener('resize', function () {
+      resize();
+      createAtoms();
+      createMolecules();
+    });
     loop();
   }
 
@@ -42,110 +44,230 @@
     H = canvas.height = window.innerHeight;
   }
 
-  function createParticles() {
-    particles = [];
-    for (var i = 0; i < PARTICLE_COUNT; i++) {
-      particles.push({
+  function createAtoms() {
+    atoms = [];
+    for (var i = 0; i < ATOM_COUNT; i++) {
+      atoms.push({
         x: Math.random() * W,
         y: Math.random() * H,
-        r: Math.random() * 3 + 1.5,
-        vx: (Math.random() - 0.5) * 0.4,
-        vy: (Math.random() - 0.5) * 0.4,
-        color: COLORS[Math.floor(Math.random() * COLORS.length)],
-        pulse: Math.random() * Math.PI * 2,
-        pulseSpeed: Math.random() * 0.02 + 0.005
+        r: Math.random() * 2.5 + 1,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        opacity: Math.random() * 0.25 + 0.08,
+        pulse: Math.random() * Math.PI * 2
       });
     }
   }
 
-  function createHexagons() {
-    hexagons = [];
-    for (var i = 0; i < HEXAGON_COUNT; i++) {
-      hexagons.push({
+  // Create small rigid molecule structures that float around
+  function createMolecules() {
+    molecules = [];
+    for (var i = 0; i < MOL_COUNT; i++) {
+      var type = Math.floor(Math.random() * 3); // 0=benzene, 1=water, 2=triangle
+      molecules.push({
         x: Math.random() * W,
         y: Math.random() * H,
-        size: Math.random() * 25 + 15,
-        rotation: Math.random() * Math.PI,
-        rotSpeed: (Math.random() - 0.5) * 0.003,
-        vx: (Math.random() - 0.5) * 0.2,
-        vy: (Math.random() - 0.5) * 0.15,
-        opacity: Math.random() * 0.06 + 0.02
+        vx: (Math.random() - 0.5) * 0.25,
+        vy: (Math.random() - 0.5) * 0.2,
+        rotation: Math.random() * Math.PI * 2,
+        rotSpeed: (Math.random() - 0.5) * 0.004,
+        type: type,
+        size: Math.random() * 18 + 14,
+        opacity: Math.random() * 0.08 + 0.04
       });
     }
   }
 
-  function drawHexagon(x, y, size, rotation, opacity) {
-    ctx.beginPath();
-    for (var i = 0; i < 6; i++) {
-      var angle = rotation + (Math.PI / 3) * i;
-      var hx = x + size * Math.cos(angle);
-      var hy = y + size * Math.sin(angle);
-      if (i === 0) ctx.moveTo(hx, hy);
-      else ctx.lineTo(hx, hy);
-    }
-    ctx.closePath();
-    ctx.strokeStyle = 'rgba(26, 82, 118, ' + opacity + ')';
-    ctx.lineWidth = 1.2;
-    ctx.stroke();
-  }
+  // Draw a DNA double helix
+  function drawHelix(centerX, amplitude, freq, phaseOffset, scale, opacity) {
+    var step = 5;
+    var baseW = 1.5 * scale;
 
-  function drawDNAHelix(time) {
-    var centerX = W * 0.82;
-    var amplitude = 40;
-    var frequency = 0.008;
-    var step = 6;
-
-    for (var y = -20; y < H + 20; y += step) {
-      var offset = Math.sin(y * frequency + time) * amplitude;
+    for (var y = -30; y < H + 30; y += step) {
+      var phase = y * freq + time + phaseOffset;
+      var offset = Math.sin(phase) * amplitude;
 
       // Strand 1
       ctx.beginPath();
-      ctx.arc(centerX + offset, y, 1.8, 0, Math.PI * 2);
-      ctx.fillStyle = HELIX_COLOR_1;
+      ctx.arc(centerX + offset, y, baseW, 0, Math.PI * 2);
+      ctx.fillStyle = BLUE_DEEP + (opacity * 0.7) + ')';
       ctx.fill();
 
       // Strand 2
       ctx.beginPath();
-      ctx.arc(centerX - offset, y, 1.8, 0, Math.PI * 2);
-      ctx.fillStyle = HELIX_COLOR_2;
+      ctx.arc(centerX - offset, y, baseW, 0, Math.PI * 2);
+      ctx.fillStyle = BLUE_MED + (opacity * 0.6) + ')';
       ctx.fill();
 
-      // Cross-links (base pairs)
-      if (y % 24 < step) {
+      // Base pairs (rungs) — draw every N pixels
+      if (y % 18 < step) {
+        // Nucleotide base pair
+        var x1 = centerX + offset;
+        var x2 = centerX - offset;
+        var midX = (x1 + x2) / 2;
+
         ctx.beginPath();
-        ctx.moveTo(centerX + offset, y);
-        ctx.lineTo(centerX - offset, y);
-        ctx.strokeStyle = 'rgba(46, 134, 193, 0.04)';
-        ctx.lineWidth = 0.8;
+        ctx.moveTo(x1, y);
+        ctx.lineTo(midX - 2, y);
+        ctx.strokeStyle = BLUE_DEEP + (opacity * 0.35) + ')';
+        ctx.lineWidth = 1.2 * scale;
         ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(midX + 2, y);
+        ctx.lineTo(x2, y);
+        ctx.strokeStyle = TEAL + (opacity * 0.35) + ')';
+        ctx.lineWidth = 1.2 * scale;
+        ctx.stroke();
+
+        // Small circles at base pair junctions
+        ctx.beginPath();
+        ctx.arc(midX - 2, y, 1.5 * scale, 0, Math.PI * 2);
+        ctx.fillStyle = BLUE_LIGHT + (opacity * 0.5) + ')';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(midX + 2, y, 1.5 * scale, 0, Math.PI * 2);
+        ctx.fillStyle = TEAL + (opacity * 0.5) + ')';
+        ctx.fill();
+      }
+
+      // Phosphate backbone markers
+      if (y % 36 < step) {
+        ctx.beginPath();
+        ctx.arc(centerX + offset, y, 3 * scale, 0, Math.PI * 2);
+        ctx.fillStyle = BLUE_DEEP + (opacity * 0.4) + ')';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(centerX - offset, y, 3 * scale, 0, Math.PI * 2);
+        ctx.fillStyle = BLUE_MED + (opacity * 0.4) + ')';
+        ctx.fill();
       }
     }
+  }
 
-    // Second smaller helix on left side
-    var centerX2 = W * 0.12;
-    var amplitude2 = 28;
+  // Draw benzene ring (hexagonal molecule)
+  function drawBenzene(x, y, size, rotation, opacity) {
+    var pts = [];
+    for (var i = 0; i < 6; i++) {
+      var angle = rotation + (Math.PI / 3) * i;
+      pts.push({
+        x: x + size * Math.cos(angle),
+        y: y + size * Math.sin(angle)
+      });
+    }
 
-    for (var y2 = -20; y2 < H + 20; y2 += step) {
-      var offset2 = Math.sin(y2 * frequency * 1.2 + time * 0.7 + 2) * amplitude2;
+    // Bonds (outer ring)
+    ctx.beginPath();
+    for (var i = 0; i < 6; i++) {
+      var next = (i + 1) % 6;
+      ctx.moveTo(pts[i].x, pts[i].y);
+      ctx.lineTo(pts[next].x, pts[next].y);
+    }
+    ctx.strokeStyle = BLUE_DEEP + opacity + ')';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
 
-      ctx.beginPath();
-      ctx.arc(centerX2 + offset2, y2, 1.3, 0, Math.PI * 2);
-      ctx.fillStyle = HELIX_COLOR_1;
-      ctx.fill();
-
-      ctx.beginPath();
-      ctx.arc(centerX2 - offset2, y2, 1.3, 0, Math.PI * 2);
-      ctx.fillStyle = HELIX_COLOR_2;
-      ctx.fill();
-
-      if (y2 % 30 < step) {
-        ctx.beginPath();
-        ctx.moveTo(centerX2 + offset2, y2);
-        ctx.lineTo(centerX2 - offset2, y2);
-        ctx.strokeStyle = 'rgba(46, 134, 193, 0.03)';
-        ctx.lineWidth = 0.6;
-        ctx.stroke();
+    // Inner ring (double bonds)
+    ctx.beginPath();
+    var innerSize = size * 0.65;
+    for (var i = 0; i < 6; i++) {
+      var angle = rotation + (Math.PI / 3) * i;
+      var ix = x + innerSize * Math.cos(angle);
+      var iy = y + innerSize * Math.sin(angle);
+      var next = (i + 1) % 6;
+      var nextAngle = rotation + (Math.PI / 3) * next;
+      var inx = x + innerSize * Math.cos(nextAngle);
+      var iny = y + innerSize * Math.sin(nextAngle);
+      if (i % 2 === 0) {
+        ctx.moveTo(ix, iy);
+        ctx.lineTo(inx, iny);
       }
+    }
+    ctx.strokeStyle = BLUE_MED + (opacity * 0.6) + ')';
+    ctx.lineWidth = 0.8;
+    ctx.stroke();
+
+    // Atoms at vertices
+    for (var i = 0; i < 6; i++) {
+      ctx.beginPath();
+      ctx.arc(pts[i].x, pts[i].y, 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = BLUE_DEEP + (opacity * 1.2) + ')';
+      ctx.fill();
+    }
+  }
+
+  // Draw water-like molecule (V shape)
+  function drawWaterMol(x, y, size, rotation, opacity) {
+    var oX = x, oY = y;
+    var h1Angle = rotation - 0.9;
+    var h2Angle = rotation + 0.9;
+    var h1X = x + size * Math.cos(h1Angle);
+    var h1Y = y + size * Math.sin(h1Angle);
+    var h2X = x + size * Math.cos(h2Angle);
+    var h2Y = y + size * Math.sin(h2Angle);
+
+    // Bonds
+    ctx.beginPath();
+    ctx.moveTo(h1X, h1Y);
+    ctx.lineTo(oX, oY);
+    ctx.lineTo(h2X, h2Y);
+    ctx.strokeStyle = BLUE_DEEP + opacity + ')';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Oxygen (larger)
+    ctx.beginPath();
+    ctx.arc(oX, oY, 4, 0, Math.PI * 2);
+    ctx.fillStyle = BLUE_MED + (opacity * 1.5) + ')';
+    ctx.fill();
+
+    // Hydrogens (smaller)
+    ctx.beginPath();
+    ctx.arc(h1X, h1Y, 2.5, 0, Math.PI * 2);
+    ctx.fillStyle = BLUE_LIGHT + (opacity * 1.2) + ')';
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(h2X, h2Y, 2.5, 0, Math.PI * 2);
+    ctx.fillStyle = BLUE_LIGHT + (opacity * 1.2) + ')';
+    ctx.fill();
+  }
+
+  // Draw triangle molecule (like NH3 top view)
+  function drawTriMol(x, y, size, rotation, opacity) {
+    var pts = [];
+    for (var i = 0; i < 3; i++) {
+      var angle = rotation + (Math.PI * 2 / 3) * i;
+      pts.push({
+        x: x + size * Math.cos(angle),
+        y: y + size * Math.sin(angle)
+      });
+    }
+
+    // Bonds from center
+    for (var i = 0; i < 3; i++) {
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      ctx.lineTo(pts[i].x, pts[i].y);
+      ctx.strokeStyle = BLUE_DEEP + opacity + ')';
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+    }
+
+    // Center atom
+    ctx.beginPath();
+    ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = TEAL + (opacity * 1.5) + ')';
+    ctx.fill();
+
+    // Outer atoms
+    for (var i = 0; i < 3; i++) {
+      ctx.beginPath();
+      ctx.arc(pts[i].x, pts[i].y, 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = BLUE_LIGHT + (opacity * 1.2) + ')';
+      ctx.fill();
     }
   }
 
@@ -157,74 +279,104 @@
     }
 
     ctx.clearRect(0, 0, W, H);
+    time += 0.012;
 
-    helixPhase += 0.015;
+    // ── DNA Helixes ──
+    // Main helix (right side)
+    drawHelix(W * 0.85, 45, 0.007, 0, 1.0, 0.12);
 
-    // Draw DNA helixes
-    drawDNAHelix(helixPhase);
+    // Secondary helix (left side, smaller)
+    drawHelix(W * 0.1, 32, 0.009, 2.5, 0.75, 0.08);
 
-    // Update and draw hexagons
-    for (var h = 0; h < hexagons.length; h++) {
-      var hex = hexagons[h];
-      hex.x += hex.vx;
-      hex.y += hex.vy;
-      hex.rotation += hex.rotSpeed;
+    // Third helix (center-left, very subtle)
+    drawHelix(W * 0.45, 25, 0.006, 4.8, 0.6, 0.05);
 
-      if (hex.x < -60) hex.x = W + 60;
-      if (hex.x > W + 60) hex.x = -60;
-      if (hex.y < -60) hex.y = H + 60;
-      if (hex.y > H + 60) hex.y = -60;
+    // ── Floating molecules ──
+    for (var m = 0; m < molecules.length; m++) {
+      var mol = molecules[m];
+      mol.x += mol.vx;
+      mol.y += mol.vy;
+      mol.rotation += mol.rotSpeed;
 
-      drawHexagon(hex.x, hex.y, hex.size, hex.rotation, hex.opacity);
+      // Wrap around
+      if (mol.x < -80) mol.x = W + 80;
+      if (mol.x > W + 80) mol.x = -80;
+      if (mol.y < -80) mol.y = H + 80;
+      if (mol.y > H + 80) mol.y = -80;
+
+      if (mol.type === 0) drawBenzene(mol.x, mol.y, mol.size, mol.rotation, mol.opacity);
+      else if (mol.type === 1) drawWaterMol(mol.x, mol.y, mol.size, mol.rotation, mol.opacity);
+      else drawTriMol(mol.x, mol.y, mol.size, mol.rotation, mol.opacity);
     }
 
-    // Update particles
-    for (var i = 0; i < particles.length; i++) {
-      var p = particles[i];
-      p.x += p.vx;
-      p.y += p.vy;
-      p.pulse += p.pulseSpeed;
+    // ── Atomic network (atoms + bonds) ──
+    // Update atoms
+    for (var i = 0; i < atoms.length; i++) {
+      var a = atoms[i];
+      a.x += a.vx;
+      a.y += a.vy;
+      a.pulse += 0.01;
 
-      if (p.x < -10) p.x = W + 10;
-      if (p.x > W + 10) p.x = -10;
-      if (p.y < -10) p.y = H + 10;
-      if (p.y > H + 10) p.y = -10;
+      if (a.x < -10) a.x = W + 10;
+      if (a.x > W + 10) a.x = -10;
+      if (a.y < -10) a.y = H + 10;
+      if (a.y > H + 10) a.y = -10;
     }
 
-    // Draw connections
-    for (var i = 0; i < particles.length; i++) {
-      for (var j = i + 1; j < particles.length; j++) {
-        var dx = particles[i].x - particles[j].x;
-        var dy = particles[i].y - particles[j].y;
+    // Draw bonds
+    for (var i = 0; i < atoms.length; i++) {
+      for (var j = i + 1; j < atoms.length; j++) {
+        var dx = atoms[i].x - atoms[j].x;
+        var dy = atoms[i].y - atoms[j].y;
         var dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < CONNECTION_DIST) {
-          var alpha = (1 - dist / CONNECTION_DIST) * 0.12;
+        if (dist < BOND_DIST) {
+          var alpha = (1 - dist / BOND_DIST) * 0.1;
           ctx.beginPath();
-          ctx.moveTo(particles[i].x, particles[i].y);
-          ctx.lineTo(particles[j].x, particles[j].y);
-          ctx.strokeStyle = 'rgba(46, 134, 193, ' + alpha + ')';
-          ctx.lineWidth = 0.6;
+          ctx.moveTo(atoms[i].x, atoms[i].y);
+          ctx.lineTo(atoms[j].x, atoms[j].y);
+          ctx.strokeStyle = BLUE_MED + alpha + ')';
+          ctx.lineWidth = 0.7;
           ctx.stroke();
+
+          // Double bond effect on close pairs
+          if (dist < BOND_DIST * 0.4) {
+            var perpX = -dy / dist * 2.5;
+            var perpY = dx / dist * 2.5;
+            ctx.beginPath();
+            ctx.moveTo(atoms[i].x + perpX, atoms[i].y + perpY);
+            ctx.lineTo(atoms[j].x + perpX, atoms[j].y + perpY);
+            ctx.strokeStyle = BLUE_LIGHT + (alpha * 0.5) + ')';
+            ctx.lineWidth = 0.4;
+            ctx.stroke();
+          }
         }
       }
     }
 
-    // Draw particles
-    for (var i = 0; i < particles.length; i++) {
-      var p = particles[i];
-      var pulseR = p.r + Math.sin(p.pulse) * 0.8;
+    // Draw atoms
+    for (var i = 0; i < atoms.length; i++) {
+      var a = atoms[i];
+      var pulseR = a.r + Math.sin(a.pulse) * 0.5;
 
+      // Atom
       ctx.beginPath();
-      ctx.arc(p.x, p.y, pulseR, 0, Math.PI * 2);
-      ctx.fillStyle = p.color;
+      ctx.arc(a.x, a.y, pulseR, 0, Math.PI * 2);
+      ctx.fillStyle = BLUE_DEEP + a.opacity + ')';
       ctx.fill();
 
-      // Glow effect on larger particles
-      if (p.r > 3) {
+      // Electron cloud glow on larger atoms
+      if (a.r > 2.5) {
         ctx.beginPath();
-        ctx.arc(p.x, p.y, pulseR + 4, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(46, 134, 193, 0.04)';
+        ctx.arc(a.x, a.y, pulseR + 5, 0, Math.PI * 2);
+        ctx.fillStyle = BLUE_LIGHT + '0.02)';
         ctx.fill();
+
+        // Electron orbit ring
+        ctx.beginPath();
+        ctx.ellipse(a.x, a.y, pulseR + 7, pulseR + 3, a.pulse * 0.5, 0, Math.PI * 2);
+        ctx.strokeStyle = BLUE_MED + '0.04)';
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
       }
     }
 
@@ -235,16 +387,14 @@
   var mo = new MutationObserver(function (mutations) {
     mutations.forEach(function (m) {
       if (m.attributeName === 'data-theme') {
-        // Reposition particles on theme switch for fresh look
         if (document.documentElement.getAttribute('data-theme') === 'academic') {
           resize();
-          createParticles();
-          createHexagons();
+          createAtoms();
+          createMolecules();
         }
       }
     });
   });
-
   mo.observe(document.documentElement, { attributes: true });
 
   if (document.readyState === 'loading') {

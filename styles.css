@@ -989,12 +989,13 @@ footer p {
 }
 
 [data-theme="academic"] .hero-photo {
-    border-radius: 8px;
+    border-radius: 50%;
     box-shadow: 0 10px 40px rgba(26, 82, 118, 0.12);
+    border: 3px solid #d5dbdb;
 }
 
 [data-theme="academic"] .hero-photo img {
-    border-radius: 8px;
+    border-radius: 50%;
 }
 
 /* ── Sections — academic paper-like feel ── */
