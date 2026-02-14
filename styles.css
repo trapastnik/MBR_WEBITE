@@ -436,6 +436,37 @@ nav.scrolled {
     margin-bottom: 0.4rem;
 }
 
+.timeline-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 0.25rem;
+}
+
+.company-logo {
+    width: 44px;
+    height: 44px;
+    object-fit: contain;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+}
+
+.company-logo-placeholder {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--cream);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: 'Playfair Display', serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--gold);
+}
+
 .timeline-item h3 {
     font-size: 1.2rem;
     margin-bottom: 0.25rem;
@@ -489,6 +520,13 @@ nav.scrolled {
 
 .edu-card:hover {
     border-color: var(--gold-light);
+}
+
+.edu-logo {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    margin-bottom: 0.75rem;
 }
 
 .edu-card h3 {
@@ -1070,6 +1108,24 @@ footer p {
     text-align: left;
 }
 
+/* ── Logos — academic adjustments ── */
+[data-theme="academic"] .edu-logo {
+    width: 56px;
+    height: 56px;
+}
+
+[data-theme="academic"] .company-logo {
+    width: 40px;
+    height: 40px;
+}
+
+[data-theme="academic"] .company-logo-placeholder {
+    background: #eef1f4;
+    border-color: #d5dbdb;
+    color: #1a5276;
+    border-radius: 2px;
+}
+
 /* ── Experience — structured CV-like timeline ── */
 [data-theme="academic"] .experience {
     background: #FFFFFF;
@@ -1450,6 +1506,14 @@ footer p {
     border-color: var(--gold-light);
     border-top-color: var(--gold-light);
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+}
+
+/* ── Logos — executive adjustments ── */
+[data-theme="executive"] .company-logo-placeholder {
+    background: rgba(184, 146, 106, 0.1);
+    border-color: rgba(184, 146, 106, 0.3);
+    color: var(--gold);
+    border-radius: 3px;
 }
 
 /* ── Experience ── */
