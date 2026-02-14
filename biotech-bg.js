@@ -80,28 +80,50 @@
 
   // Draw a DNA double helix
   function drawHelix(centerX, amplitude, freq, phaseOffset, scale, opacity) {
-    var step = 5;
-    var baseW = 1.5 * scale;
+    var step = 3;
+    var baseW = 2.2 * scale;
+
+    // Draw continuous backbone strands first
+    ctx.beginPath();
+    for (var y = -30; y < H + 30; y += 2) {
+      var phase = y * freq + time + phaseOffset;
+      var offset = Math.sin(phase) * amplitude;
+      if (y === -30) ctx.moveTo(centerX + offset, y);
+      else ctx.lineTo(centerX + offset, y);
+    }
+    ctx.strokeStyle = BLUE_DEEP + (opacity * 0.6) + ')';
+    ctx.lineWidth = 2 * scale;
+    ctx.stroke();
+
+    ctx.beginPath();
+    for (var y = -30; y < H + 30; y += 2) {
+      var phase = y * freq + time + phaseOffset;
+      var offset = Math.sin(phase) * amplitude;
+      if (y === -30) ctx.moveTo(centerX - offset, y);
+      else ctx.lineTo(centerX - offset, y);
+    }
+    ctx.strokeStyle = BLUE_MED + (opacity * 0.5) + ')';
+    ctx.lineWidth = 2 * scale;
+    ctx.stroke();
 
     for (var y = -30; y < H + 30; y += step) {
       var phase = y * freq + time + phaseOffset;
       var offset = Math.sin(phase) * amplitude;
 
-      // Strand 1
+      // Strand 1 nodes
       ctx.beginPath();
       ctx.arc(centerX + offset, y, baseW, 0, Math.PI * 2);
-      ctx.fillStyle = BLUE_DEEP + (opacity * 0.7) + ')';
+      ctx.fillStyle = BLUE_DEEP + (opacity * 0.55) + ')';
       ctx.fill();
 
-      // Strand 2
+      // Strand 2 nodes
       ctx.beginPath();
       ctx.arc(centerX - offset, y, baseW, 0, Math.PI * 2);
-      ctx.fillStyle = BLUE_MED + (opacity * 0.6) + ')';
+      ctx.fillStyle = BLUE_MED + (opacity * 0.45) + ')';
       ctx.fill();
 
       // Base pairs (rungs) — draw every N pixels
-      if (y % 18 < step) {
-        // Nucleotide base pair
+      if (y % 14 < step) {
         var x1 = centerX + offset;
         var x2 = centerX - offset;
         var midX = (x1 + x2) / 2;
@@ -109,39 +131,39 @@
         ctx.beginPath();
         ctx.moveTo(x1, y);
         ctx.lineTo(midX - 2, y);
-        ctx.strokeStyle = BLUE_DEEP + (opacity * 0.35) + ')';
-        ctx.lineWidth = 1.2 * scale;
+        ctx.strokeStyle = BLUE_DEEP + (opacity * 0.5) + ')';
+        ctx.lineWidth = 1.8 * scale;
         ctx.stroke();
 
         ctx.beginPath();
         ctx.moveTo(midX + 2, y);
         ctx.lineTo(x2, y);
-        ctx.strokeStyle = TEAL + (opacity * 0.35) + ')';
-        ctx.lineWidth = 1.2 * scale;
+        ctx.strokeStyle = TEAL + (opacity * 0.5) + ')';
+        ctx.lineWidth = 1.8 * scale;
         ctx.stroke();
 
-        // Small circles at base pair junctions
+        // Nucleotide base pair circles at junctions
         ctx.beginPath();
-        ctx.arc(midX - 2, y, 1.5 * scale, 0, Math.PI * 2);
-        ctx.fillStyle = BLUE_LIGHT + (opacity * 0.5) + ')';
+        ctx.arc(midX - 3, y, 2.5 * scale, 0, Math.PI * 2);
+        ctx.fillStyle = BLUE_LIGHT + (opacity * 0.6) + ')';
         ctx.fill();
 
         ctx.beginPath();
-        ctx.arc(midX + 2, y, 1.5 * scale, 0, Math.PI * 2);
-        ctx.fillStyle = TEAL + (opacity * 0.5) + ')';
+        ctx.arc(midX + 3, y, 2.5 * scale, 0, Math.PI * 2);
+        ctx.fillStyle = TEAL + (opacity * 0.6) + ')';
         ctx.fill();
       }
 
       // Phosphate backbone markers
-      if (y % 36 < step) {
+      if (y % 28 < step) {
         ctx.beginPath();
-        ctx.arc(centerX + offset, y, 3 * scale, 0, Math.PI * 2);
-        ctx.fillStyle = BLUE_DEEP + (opacity * 0.4) + ')';
+        ctx.arc(centerX + offset, y, 4 * scale, 0, Math.PI * 2);
+        ctx.fillStyle = BLUE_DEEP + (opacity * 0.5) + ')';
         ctx.fill();
 
         ctx.beginPath();
-        ctx.arc(centerX - offset, y, 3 * scale, 0, Math.PI * 2);
-        ctx.fillStyle = BLUE_MED + (opacity * 0.4) + ')';
+        ctx.arc(centerX - offset, y, 4 * scale, 0, Math.PI * 2);
+        ctx.fillStyle = BLUE_MED + (opacity * 0.5) + ')';
         ctx.fill();
       }
     }
@@ -282,14 +304,14 @@
     time += 0.012;
 
     // ── DNA Helixes ──
-    // Main helix (right side)
-    drawHelix(W * 0.85, 45, 0.007, 0, 1.0, 0.12);
+    // Main helix (right side, prominent)
+    drawHelix(W * 0.85, 50, 0.007, 0, 1.1, 0.35);
 
-    // Secondary helix (left side, smaller)
-    drawHelix(W * 0.1, 32, 0.009, 2.5, 0.75, 0.08);
+    // Secondary helix (left side)
+    drawHelix(W * 0.1, 38, 0.009, 2.5, 0.85, 0.25);
 
-    // Third helix (center-left, very subtle)
-    drawHelix(W * 0.45, 25, 0.006, 4.8, 0.6, 0.05);
+    // Third helix (center-left)
+    drawHelix(W * 0.45, 30, 0.006, 4.8, 0.7, 0.15);
 
     // ── Floating molecules ──
     for (var m = 0; m < molecules.length; m++) {
