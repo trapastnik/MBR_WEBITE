@@ -294,8 +294,9 @@
   }
 
   function loop() {
-    var isAcademic = document.documentElement.getAttribute('data-theme') === 'academic';
-    if (!isAcademic) {
+    var theme = document.documentElement.getAttribute('data-theme');
+    var isActive = (theme === 'academic' || theme === 'executive');
+    if (!isActive) {
       animId = requestAnimationFrame(loop);
       return;
     }
@@ -409,7 +410,8 @@
   var mo = new MutationObserver(function (mutations) {
     mutations.forEach(function (m) {
       if (m.attributeName === 'data-theme') {
-        if (document.documentElement.getAttribute('data-theme') === 'academic') {
+        var t = document.documentElement.getAttribute('data-theme');
+        if (t === 'academic' || t === 'executive') {
           resize();
           createAtoms();
           createMolecules();

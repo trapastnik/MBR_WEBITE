@@ -1225,6 +1225,403 @@ footer p {
     background: var(--cream);
 }
 
+/* ── Exec-only elements: hidden by default ── */
+.exec-only {
+    display: none !important;
+}
+
+.hero-subtitle-exec {
+    display: none !important;
+}
+
+[data-theme="executive"] .exec-only {
+    display: block !important;
+}
+
+[data-theme="executive"] .hero-subtitle-exec {
+    display: block !important;
+}
+
+/* Show pub links in academic theme too */
+[data-theme="academic"] .pub-links {
+    display: flex !important;
+}
+
+[data-theme="academic"] .pub-links a {
+    background: #1a5276;
+    color: #fff;
+}
+
+[data-theme="academic"] .pub-links a:hover {
+    background: #2e86c1;
+}
+
+[data-theme="executive"] .hero-subtitle:not(.hero-subtitle-exec) {
+    display: none !important;
+}
+
+/* Exec-only service cards need grid display */
+[data-theme="executive"] .service-card.exec-only {
+    display: block !important;
+}
+
+/* Publication links */
+.pub-links {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.75rem;
+}
+
+.pub-links a {
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-decoration: none;
+    padding: 0.3rem 0.8rem;
+    border-radius: 3px;
+    transition: all 0.3s ease;
+}
+
+/* ══════════════════════════════════════════════════
+   EXECUTIVE THEME — Corporate Advisory / Premium
+   ══════════════════════════════════════════════════ */
+
+/* ── Palette ── */
+[data-theme="executive"] {
+    --gold: #B8926A;
+    --gold-light: #D4B896;
+    --gold-dark: #9A7550;
+    --charcoal: #1a1a2e;
+    --charcoal-light: #2d2d44;
+    --cream: #f5f5f7;
+    --cream-dark: #ebebef;
+    --white: #FFFFFF;
+    --text: #2d2d44;
+    --text-light: #5a5a72;
+    --border: #d8d8e0;
+}
+
+/* ── Typography ── */
+[data-theme="executive"] body {
+    font-family: 'Inter', sans-serif;
+    line-height: 1.75;
+    font-weight: 300;
+}
+
+[data-theme="executive"] h1,
+[data-theme="executive"] h2,
+[data-theme="executive"] h3,
+[data-theme="executive"] h4 {
+    font-family: 'Playfair Display', serif;
+    letter-spacing: -0.02em;
+}
+
+/* ── Navigation ── */
+[data-theme="executive"] nav {
+    background: rgba(26, 26, 46, 0.97);
+    border-bottom: 1px solid rgba(184, 146, 106, 0.3);
+    backdrop-filter: blur(12px);
+}
+
+[data-theme="executive"] nav.scrolled {
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="executive"] .nav-logo {
+    color: #f5f5f7;
+    font-family: 'Playfair Display', serif;
+}
+
+[data-theme="executive"] .nav-logo span {
+    color: var(--gold);
+}
+
+[data-theme="executive"] .nav-links a {
+    color: rgba(245, 245, 247, 0.7);
+    font-weight: 400;
+}
+
+[data-theme="executive"] .nav-links a:hover {
+    color: var(--gold-light);
+}
+
+[data-theme="executive"] .nav-toggle span {
+    background: #f5f5f7;
+}
+
+/* ── Hero ── */
+[data-theme="executive"] .hero {
+    background: linear-gradient(160deg, #1a1a2e 0%, #2d2d44 40%, #1a1a2e 100%);
+    padding: 130px 2rem 80px;
+    min-height: 90vh;
+}
+
+[data-theme="executive"] .hero::before {
+    background: radial-gradient(circle at 70% 30%, rgba(184, 146, 106, 0.08) 0%, transparent 60%);
+    display: block;
+}
+
+[data-theme="executive"] .hero-label {
+    color: var(--gold);
+    border: 1px solid rgba(184, 146, 106, 0.3);
+    padding: 0.4rem 1rem;
+    border-radius: 2px;
+    display: inline-block;
+}
+
+[data-theme="executive"] .hero h1 {
+    color: #f5f5f7;
+    font-size: 3.2rem;
+}
+
+[data-theme="executive"] .hero h1 em {
+    color: var(--gold);
+}
+
+[data-theme="executive"] .hero-subtitle {
+    color: rgba(245, 245, 247, 0.7);
+}
+
+[data-theme="executive"] .hero-subtitle-exec {
+    color: rgba(245, 245, 247, 0.65);
+    font-size: 1rem;
+    line-height: 1.85;
+    border-left: 3px solid var(--gold);
+    padding-left: 1.2rem;
+    margin-top: 1rem;
+}
+
+[data-theme="executive"] .hero-cta {
+    background: var(--gold);
+    border-radius: 3px;
+}
+
+[data-theme="executive"] .hero-cta:hover {
+    background: var(--gold-dark);
+    box-shadow: 0 8px 30px rgba(184, 146, 106, 0.35);
+}
+
+[data-theme="executive"] .hero-photo {
+    border-radius: 50%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    border: 3px solid rgba(184, 146, 106, 0.4);
+}
+
+[data-theme="executive"] .hero-photo img {
+    border-radius: 50%;
+}
+
+/* ── Sections ── */
+[data-theme="executive"] .section-label {
+    color: var(--gold);
+    font-weight: 500;
+}
+
+[data-theme="executive"] .section-divider {
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+}
+
+/* ── About ── */
+[data-theme="executive"] .about {
+    background: var(--white);
+}
+
+[data-theme="executive"] .stat {
+    background: #f5f5f7;
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--gold);
+    border-radius: 3px;
+}
+
+[data-theme="executive"] .stat-number {
+    color: var(--gold);
+}
+
+/* ── Services ── */
+[data-theme="executive"] .services-grid {
+    grid-template-columns: repeat(4, 1fr);
+}
+
+[data-theme="executive"] .service-card {
+    border-radius: 3px;
+    border-top: 3px solid var(--gold);
+}
+
+[data-theme="executive"] .service-card:hover {
+    border-color: var(--gold-light);
+    border-top-color: var(--gold-light);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+}
+
+/* ── Experience ── */
+[data-theme="executive"] .experience {
+    background: var(--white);
+}
+
+[data-theme="executive"] .timeline::before {
+    background: linear-gradient(180deg, var(--gold), var(--gold-light), var(--gold));
+}
+
+[data-theme="executive"] .timeline-item::before {
+    background: var(--gold);
+}
+
+[data-theme="executive"] .timeline-period {
+    color: var(--gold);
+}
+
+[data-theme="executive"] .timeline-tag {
+    border: 1px solid var(--border);
+    border-radius: 3px;
+}
+
+/* ── Education ── */
+[data-theme="executive"] .edu-card {
+    border-top: 3px solid var(--gold);
+    border-radius: 3px;
+}
+
+[data-theme="executive"] .edu-card:hover {
+    border-top-color: var(--gold-light);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="executive"] .lang-badge {
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    background: var(--white);
+}
+
+/* ── Publications ── */
+[data-theme="executive"] .publications {
+    background: var(--white);
+}
+
+[data-theme="executive"] .pub-item {
+    border-left: 4px solid var(--gold);
+}
+
+[data-theme="executive"] .pub-item:hover {
+    border-left-color: var(--gold-light);
+}
+
+[data-theme="executive"] .pub-links a {
+    background: var(--gold);
+    color: #fff;
+}
+
+[data-theme="executive"] .pub-links a:hover {
+    background: var(--gold-dark);
+}
+
+/* ── New exec sections ── */
+[data-theme="executive"] .capital-markets-content,
+[data-theme="executive"] .advisory-content,
+[data-theme="executive"] .speaking-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+[data-theme="executive"] .capital-markets-content p,
+[data-theme="executive"] .advisory-content p,
+[data-theme="executive"] .speaking-content p {
+    color: var(--text-light);
+    font-size: 1.02rem;
+    line-height: 1.85;
+    margin-bottom: 1rem;
+}
+
+[data-theme="executive"] #capital-markets {
+    background: var(--white);
+    border-top: 1px solid var(--border);
+}
+
+[data-theme="executive"] #advisory {
+    background: var(--cream);
+}
+
+[data-theme="executive"] #speaking {
+    background: var(--white);
+    border-top: 1px solid var(--border);
+}
+
+/* ── Testimonials ── */
+[data-theme="executive"] .testimonial-card {
+    border-radius: 3px;
+    border-left: 4px solid var(--gold);
+}
+
+[data-theme="executive"] .testimonial-quote {
+    color: var(--gold-light);
+}
+
+/* ── Contact ── */
+[data-theme="executive"] .contact {
+    background: #1a1a2e;
+}
+
+[data-theme="executive"] .contact .section-label {
+    color: var(--gold-light);
+}
+
+[data-theme="executive"] .contact .section-header h2 {
+    color: #f5f5f7;
+}
+
+[data-theme="executive"] .contact .section-header p {
+    color: rgba(245, 245, 247, 0.6);
+}
+
+[data-theme="executive"] .contact-info h3 {
+    color: #f5f5f7;
+}
+
+[data-theme="executive"] .contact-item svg {
+    stroke: var(--gold);
+}
+
+[data-theme="executive"] .contact-item a {
+    color: rgba(245, 245, 247, 0.8);
+}
+
+[data-theme="executive"] .contact-item a:hover {
+    color: var(--gold-light);
+}
+
+[data-theme="executive"] .form-submit:hover {
+    box-shadow: 0 8px 25px rgba(184, 146, 106, 0.35);
+}
+
+/* ── Footer ── */
+[data-theme="executive"] footer {
+    background: #1a1a2e;
+    border-top: 1px solid rgba(184, 146, 106, 0.2);
+}
+
+/* ── Mobile nav ── */
+[data-theme="executive"] .nav-links {
+    background: #1a1a2e;
+    border-bottom: 1px solid rgba(184, 146, 106, 0.2);
+}
+
+/* ── Executive responsive ── */
+@media (max-width: 1024px) {
+    [data-theme="executive"] .services-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    [data-theme="executive"] .services-grid {
+        grid-template-columns: 1fr;
+    }
+    [data-theme="executive"] .hero h1 {
+        font-size: 2.5rem;
+    }
+    [data-theme="executive"] .hero {
+        min-height: auto;
+    }
+}
+
 /* ── Biotech Background Canvas ── */
 #biotech-canvas {
     position: fixed;
@@ -1240,6 +1637,10 @@ footer p {
 
 [data-theme="academic"] #biotech-canvas {
     opacity: 1;
+}
+
+[data-theme="executive"] #biotech-canvas {
+    opacity: 0.4;
 }
 
 /* ── Theme Toggle ── */
