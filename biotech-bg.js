@@ -1,6 +1,7 @@
 /**
  * Molecular DNA Background — animated canvas
- * Only active when data-theme="academic" is set on <html>
+ * Only active when data-theme="academic" or "executive" is set on <html>
+ * Features: smooth drift, random rotation angles, mouse repulsion, scroll parallax
  */
 (function () {
   'use strict';
@@ -8,22 +9,33 @@
   var canvas, ctx, animId;
   var W, H;
   var time = 0;
+  var dt = 0;
+  var lastFrame = 0;
+
+  // Mouse tracking (smoothed)
+  var mouseX = -9999, mouseY = -9999;
+  var smoothMouseX = -9999, smoothMouseY = -9999;
+  var mouseActive = false;
+  var MOUSE_RADIUS = 200;
+  var MOUSE_FORCE = 2.8;
+
+  // Scroll tracking
+  var scrollY = 0;
+  var scrollVel = 0;
+  var lastScrollY = 0;
 
   // Molecule nodes (atoms)
   var atoms = [];
-  var ATOM_COUNT = 70;
-  var BOND_DIST = 140;
+  var ATOM_COUNT = 90;
+  var BOND_DIST = 130;
 
-  // Helix drift state (random wandering)
-  var helixes = [
-    { driftX: 0, driftY: 0, driftVX: 0, driftVY: 0, baseX: 0.85 },
-    { driftX: 0, driftY: 0, driftVX: 0, driftVY: 0, baseX: 0.1 },
-    { driftX: 0, driftY: 0, driftVX: 0, driftVY: 0, baseX: 0.45 }
-  ];
+  // 5 helixes at various angles
+  var helixes = [];
+  var HELIX_COUNT = 5;
 
-  // Floating molecules (small rigid structures)
+  // Floating molecules
   var molecules = [];
-  var MOL_COUNT = 6;
+  var MOL_COUNT = 9;
 
   // Colors
   var BLUE_DEEP = 'rgba(26, 82, 118, ';
@@ -31,24 +43,74 @@
   var BLUE_LIGHT = 'rgba(133, 193, 233, ';
   var TEAL = 'rgba(40, 116, 166, ';
 
+  function lerp(a, b, t) {
+    return a + (b - a) * t;
+  }
+
   function init() {
     canvas = document.getElementById('biotech-canvas');
     if (!canvas) return;
     ctx = canvas.getContext('2d');
     resize();
+    createHelixes();
     createAtoms();
     createMolecules();
     window.addEventListener('resize', function () {
       resize();
+      createHelixes();
       createAtoms();
       createMolecules();
     });
+
+    window.addEventListener('mousemove', function (e) {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      mouseActive = true;
+    });
+    window.addEventListener('mouseleave', function () {
+      mouseActive = false;
+      mouseX = -9999;
+      mouseY = -9999;
+    });
+
+    window.addEventListener('scroll', function () {
+      scrollY = window.pageYOffset || document.documentElement.scrollTop;
+    }, { passive: true });
+
+    lastFrame = performance.now();
     loop();
   }
 
   function resize() {
     W = canvas.width = window.innerWidth;
     H = canvas.height = window.innerHeight;
+  }
+
+  function createHelixes() {
+    helixes = [];
+    for (var i = 0; i < HELIX_COUNT; i++) {
+      var angle = (Math.random() - 0.5) * 1.4; // -0.7 to 0.7 radians (~±40°)
+      helixes.push({
+        // Position
+        baseX: (i + 0.5) / HELIX_COUNT + (Math.random() - 0.5) * 0.15,
+        baseY: 0.5,
+        driftX: 0, driftY: 0,
+        driftVX: 0, driftVY: 0,
+        // Rotation
+        angle: angle,
+        targetAngle: angle,
+        angleVel: 0,
+        // Per-helix properties
+        amplitude: 28 + Math.random() * 30,
+        freq: 0.005 + Math.random() * 0.005,
+        phase: Math.random() * Math.PI * 2,
+        scale: 0.6 + Math.random() * 0.5,
+        opacity: 0.06 + Math.random() * 0.1,
+        parallax: 0.1 + Math.random() * 0.25,
+        // Timer for angle changes
+        angleTimer: Math.random() * 600
+      });
+    }
   }
 
   function createAtoms() {
@@ -58,26 +120,25 @@
         x: Math.random() * W,
         y: Math.random() * H,
         r: Math.random() * 2.5 + 1,
-        vx: (Math.random() - 0.5) * 0.3,
-        vy: (Math.random() - 0.5) * 0.3,
-        opacity: Math.random() * 0.12 + 0.04,
+        vx: (Math.random() - 0.5) * 0.25,
+        vy: (Math.random() - 0.5) * 0.25,
+        opacity: Math.random() * 0.1 + 0.03,
         pulse: Math.random() * Math.PI * 2
       });
     }
   }
 
-  // Create small rigid molecule structures that float around
   function createMolecules() {
     molecules = [];
     for (var i = 0; i < MOL_COUNT; i++) {
-      var type = Math.floor(Math.random() * 3); // 0=benzene, 1=water, 2=triangle
+      var type = Math.floor(Math.random() * 3);
       molecules.push({
         x: Math.random() * W,
         y: Math.random() * H,
-        vx: (Math.random() - 0.5) * 0.25,
-        vy: (Math.random() - 0.5) * 0.2,
+        vx: (Math.random() - 0.5) * 0.2,
+        vy: (Math.random() - 0.5) * 0.15,
         rotation: Math.random() * Math.PI * 2,
-        rotSpeed: (Math.random() - 0.5) * 0.004,
+        rotSpeed: (Math.random() - 0.5) * 0.003,
         type: type,
         size: Math.random() * 18 + 14,
         opacity: Math.random() * 0.04 + 0.02
@@ -85,78 +146,86 @@
     }
   }
 
-  // Draw a DNA double helix
-  function drawHelix(centerX, amplitude, freq, phaseOffset, scale, opacity) {
+  // Draw a DNA double helix rotated at an angle
+  function drawHelix(cx, cy, angle, yOffset, amplitude, freq, phaseOffset, scale, opacity) {
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(angle);
+
+    // The helix extends along the local Y axis, centered at (0,0)
+    var halfLen = Math.max(W, H) * 0.8;
     var step = 3;
     var baseW = 2.2 * scale;
 
-    // Draw continuous backbone strands first
+    // Strand 1 backbone
     ctx.beginPath();
-    for (var y = -30; y < H + 30; y += 2) {
+    for (var y = -halfLen; y < halfLen; y += 2) {
+      var drawY = y + yOffset;
       var phase = y * freq + time + phaseOffset;
       var offset = Math.sin(phase) * amplitude;
-      if (y === -30) ctx.moveTo(centerX + offset, y);
-      else ctx.lineTo(centerX + offset, y);
+      if (y === -halfLen) ctx.moveTo(offset, drawY);
+      else ctx.lineTo(offset, drawY);
     }
     ctx.strokeStyle = BLUE_DEEP + (opacity * 0.6) + ')';
     ctx.lineWidth = 2 * scale;
     ctx.stroke();
 
+    // Strand 2 backbone
     ctx.beginPath();
-    for (var y = -30; y < H + 30; y += 2) {
+    for (var y = -halfLen; y < halfLen; y += 2) {
+      var drawY = y + yOffset;
       var phase = y * freq + time + phaseOffset;
       var offset = Math.sin(phase) * amplitude;
-      if (y === -30) ctx.moveTo(centerX - offset, y);
-      else ctx.lineTo(centerX - offset, y);
+      if (y === -halfLen) ctx.moveTo(-offset, drawY);
+      else ctx.lineTo(-offset, drawY);
     }
     ctx.strokeStyle = BLUE_MED + (opacity * 0.5) + ')';
     ctx.lineWidth = 2 * scale;
     ctx.stroke();
 
-    for (var y = -30; y < H + 30; y += step) {
+    // Nodes and base pairs
+    for (var y = -halfLen; y < halfLen; y += step) {
+      var drawY = y + yOffset;
       var phase = y * freq + time + phaseOffset;
       var offset = Math.sin(phase) * amplitude;
 
-      // Strand 1 nodes
       ctx.beginPath();
-      ctx.arc(centerX + offset, y, baseW, 0, Math.PI * 2);
+      ctx.arc(offset, drawY, baseW, 0, Math.PI * 2);
       ctx.fillStyle = BLUE_DEEP + (opacity * 0.55) + ')';
       ctx.fill();
 
-      // Strand 2 nodes
       ctx.beginPath();
-      ctx.arc(centerX - offset, y, baseW, 0, Math.PI * 2);
+      ctx.arc(-offset, drawY, baseW, 0, Math.PI * 2);
       ctx.fillStyle = BLUE_MED + (opacity * 0.45) + ')';
       ctx.fill();
 
-      // Base pairs (rungs) — draw every N pixels
+      // Base pairs (rungs)
       if (y % 14 < step) {
-        var x1 = centerX + offset;
-        var x2 = centerX - offset;
-        var midX = (x1 + x2) / 2;
+        var x1 = offset;
+        var x2 = -offset;
+        var midX = 0;
 
         ctx.beginPath();
-        ctx.moveTo(x1, y);
-        ctx.lineTo(midX - 2, y);
+        ctx.moveTo(x1, drawY);
+        ctx.lineTo(midX - 2, drawY);
         ctx.strokeStyle = BLUE_DEEP + (opacity * 0.5) + ')';
         ctx.lineWidth = 1.8 * scale;
         ctx.stroke();
 
         ctx.beginPath();
-        ctx.moveTo(midX + 2, y);
-        ctx.lineTo(x2, y);
+        ctx.moveTo(midX + 2, drawY);
+        ctx.lineTo(x2, drawY);
         ctx.strokeStyle = TEAL + (opacity * 0.5) + ')';
         ctx.lineWidth = 1.8 * scale;
         ctx.stroke();
 
-        // Nucleotide base pair circles at junctions
         ctx.beginPath();
-        ctx.arc(midX - 3, y, 2.5 * scale, 0, Math.PI * 2);
+        ctx.arc(-3, drawY, 2.5 * scale, 0, Math.PI * 2);
         ctx.fillStyle = BLUE_LIGHT + (opacity * 0.6) + ')';
         ctx.fill();
 
         ctx.beginPath();
-        ctx.arc(midX + 3, y, 2.5 * scale, 0, Math.PI * 2);
+        ctx.arc(3, drawY, 2.5 * scale, 0, Math.PI * 2);
         ctx.fillStyle = TEAL + (opacity * 0.6) + ')';
         ctx.fill();
       }
@@ -164,30 +233,28 @@
       // Phosphate backbone markers
       if (y % 28 < step) {
         ctx.beginPath();
-        ctx.arc(centerX + offset, y, 4 * scale, 0, Math.PI * 2);
+        ctx.arc(offset, drawY, 4 * scale, 0, Math.PI * 2);
         ctx.fillStyle = BLUE_DEEP + (opacity * 0.5) + ')';
         ctx.fill();
 
         ctx.beginPath();
-        ctx.arc(centerX - offset, y, 4 * scale, 0, Math.PI * 2);
+        ctx.arc(-offset, drawY, 4 * scale, 0, Math.PI * 2);
         ctx.fillStyle = BLUE_MED + (opacity * 0.5) + ')';
         ctx.fill();
       }
     }
+
+    ctx.restore();
   }
 
-  // Draw benzene ring (hexagonal molecule)
+  // Draw benzene ring
   function drawBenzene(x, y, size, rotation, opacity) {
     var pts = [];
     for (var i = 0; i < 6; i++) {
       var angle = rotation + (Math.PI / 3) * i;
-      pts.push({
-        x: x + size * Math.cos(angle),
-        y: y + size * Math.sin(angle)
-      });
+      pts.push({ x: x + size * Math.cos(angle), y: y + size * Math.sin(angle) });
     }
 
-    // Bonds (outer ring)
     ctx.beginPath();
     for (var i = 0; i < 6; i++) {
       var next = (i + 1) % 6;
@@ -198,7 +265,6 @@
     ctx.lineWidth = 1.2;
     ctx.stroke();
 
-    // Inner ring (double bonds)
     ctx.beginPath();
     var innerSize = size * 0.65;
     for (var i = 0; i < 6; i++) {
@@ -209,16 +275,12 @@
       var nextAngle = rotation + (Math.PI / 3) * next;
       var inx = x + innerSize * Math.cos(nextAngle);
       var iny = y + innerSize * Math.sin(nextAngle);
-      if (i % 2 === 0) {
-        ctx.moveTo(ix, iy);
-        ctx.lineTo(inx, iny);
-      }
+      if (i % 2 === 0) { ctx.moveTo(ix, iy); ctx.lineTo(inx, iny); }
     }
     ctx.strokeStyle = BLUE_MED + (opacity * 0.6) + ')';
     ctx.lineWidth = 0.8;
     ctx.stroke();
 
-    // Atoms at vertices
     for (var i = 0; i < 6; i++) {
       ctx.beginPath();
       ctx.arc(pts[i].x, pts[i].y, 2.5, 0, Math.PI * 2);
@@ -227,9 +289,7 @@
     }
   }
 
-  // Draw water-like molecule (V shape)
   function drawWaterMol(x, y, size, rotation, opacity) {
-    var oX = x, oY = y;
     var h1Angle = rotation - 0.9;
     var h2Angle = rotation + 0.9;
     var h1X = x + size * Math.cos(h1Angle);
@@ -237,22 +297,19 @@
     var h2X = x + size * Math.cos(h2Angle);
     var h2Y = y + size * Math.sin(h2Angle);
 
-    // Bonds
     ctx.beginPath();
     ctx.moveTo(h1X, h1Y);
-    ctx.lineTo(oX, oY);
+    ctx.lineTo(x, y);
     ctx.lineTo(h2X, h2Y);
     ctx.strokeStyle = BLUE_DEEP + opacity + ')';
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
-    // Oxygen (larger)
     ctx.beginPath();
-    ctx.arc(oX, oY, 4, 0, Math.PI * 2);
+    ctx.arc(x, y, 4, 0, Math.PI * 2);
     ctx.fillStyle = BLUE_MED + (opacity * 1.5) + ')';
     ctx.fill();
 
-    // Hydrogens (smaller)
     ctx.beginPath();
     ctx.arc(h1X, h1Y, 2.5, 0, Math.PI * 2);
     ctx.fillStyle = BLUE_LIGHT + (opacity * 1.2) + ')';
@@ -264,18 +321,13 @@
     ctx.fill();
   }
 
-  // Draw triangle molecule (like NH3 top view)
   function drawTriMol(x, y, size, rotation, opacity) {
     var pts = [];
     for (var i = 0; i < 3; i++) {
       var angle = rotation + (Math.PI * 2 / 3) * i;
-      pts.push({
-        x: x + size * Math.cos(angle),
-        y: y + size * Math.sin(angle)
-      });
+      pts.push({ x: x + size * Math.cos(angle), y: y + size * Math.sin(angle) });
     }
 
-    // Bonds from center
     for (var i = 0; i < 3; i++) {
       ctx.beginPath();
       ctx.moveTo(x, y);
@@ -285,13 +337,11 @@
       ctx.stroke();
     }
 
-    // Center atom
     ctx.beginPath();
     ctx.arc(x, y, 3.5, 0, Math.PI * 2);
     ctx.fillStyle = TEAL + (opacity * 1.5) + ')';
     ctx.fill();
 
-    // Outer atoms
     for (var i = 0; i < 3; i++) {
       ctx.beginPath();
       ctx.arc(pts[i].x, pts[i].y, 2.5, 0, Math.PI * 2);
@@ -300,7 +350,23 @@
     }
   }
 
-  function loop() {
+  function mouseRepel(px, py, strength) {
+    if (!mouseActive) return { x: 0, y: 0 };
+    var dx = px - smoothMouseX;
+    var dy = py - smoothMouseY;
+    var dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist < MOUSE_RADIUS && dist > 1) {
+      var force = (1 - dist / MOUSE_RADIUS) * strength;
+      return { x: (dx / dist) * force, y: (dy / dist) * force };
+    }
+    return { x: 0, y: 0 };
+  }
+
+  function loop(now) {
+    if (!now) now = performance.now();
+    dt = Math.min((now - lastFrame) / 16.667, 3); // normalize to ~60fps, cap at 3x
+    lastFrame = now;
+
     var theme = document.documentElement.getAttribute('data-theme');
     var isActive = (theme === 'academic' || theme === 'executive');
     if (!isActive) {
@@ -309,45 +375,105 @@
     }
 
     ctx.clearRect(0, 0, W, H);
-    time += 0.012;
+    time += 0.01 * dt;
 
-    // ── Update helix drift (random wandering) ──
-    for (var h = 0; h < helixes.length; h++) {
-      var hx = helixes[h];
-      // Random acceleration (brownian-like motion)
-      hx.driftVX += (Math.random() - 0.5) * 0.04;
-      hx.driftVY += (Math.random() - 0.5) * 0.02;
-      // Damping to prevent runaway
-      hx.driftVX *= 0.98;
-      hx.driftVY *= 0.98;
-      // Limit drift range
-      hx.driftX += hx.driftVX;
-      hx.driftY += hx.driftVY;
-      var maxDrift = W * 0.06;
-      if (hx.driftX > maxDrift) { hx.driftX = maxDrift; hx.driftVX *= -0.5; }
-      if (hx.driftX < -maxDrift) { hx.driftX = -maxDrift; hx.driftVX *= -0.5; }
-      if (hx.driftY > 30) { hx.driftY = 30; hx.driftVY *= -0.5; }
-      if (hx.driftY < -30) { hx.driftY = -30; hx.driftVY *= -0.5; }
+    // Smooth mouse position
+    if (mouseActive) {
+      smoothMouseX = lerp(smoothMouseX, mouseX, 0.08 * dt);
+      smoothMouseY = lerp(smoothMouseY, mouseY, 0.08 * dt);
+    } else {
+      smoothMouseX = lerp(smoothMouseX, -9999, 0.03 * dt);
+      smoothMouseY = lerp(smoothMouseY, -9999, 0.03 * dt);
     }
 
-    // ── DNA Helixes (reduced opacity, random drift) ──
-    // Main helix (right side)
-    drawHelix(W * helixes[0].baseX + helixes[0].driftX, 50, 0.007, helixes[0].driftY, 1.1, 0.18);
+    // Update scroll velocity (smoothed)
+    scrollVel = lerp(scrollVel, (scrollY - lastScrollY) * 0.3, 0.15 * dt);
+    lastScrollY = lerp(lastScrollY, scrollY, 0.08 * dt);
 
-    // Secondary helix (left side)
-    drawHelix(W * helixes[1].baseX + helixes[1].driftX, 38, 0.009, 2.5 + helixes[1].driftY * 0.1, 0.85, 0.12);
+    // ── Update helix drift & rotation ──
+    for (var h = 0; h < helixes.length; h++) {
+      var hx = helixes[h];
 
-    // Third helix (center-left)
-    drawHelix(W * helixes[2].baseX + helixes[2].driftX, 30, 0.006, 4.8 + helixes[2].driftY * 0.1, 0.7, 0.08);
+      // Periodically pick a new target angle
+      hx.angleTimer -= dt;
+      if (hx.angleTimer <= 0) {
+        hx.targetAngle = (Math.random() - 0.5) * 1.4; // new random angle ±40°
+        hx.angleTimer = 400 + Math.random() * 500; // next change in ~7-15 seconds
+      }
+
+      // Smoothly rotate toward target angle
+      var angleDiff = hx.targetAngle - hx.angle;
+      hx.angleVel += angleDiff * 0.0003 * dt;
+      hx.angleVel *= (1 - 0.02 * dt); // damping
+      hx.angle += hx.angleVel * dt;
+
+      // Random acceleration (smooth brownian)
+      hx.driftVX += (Math.random() - 0.5) * 0.025 * dt;
+      hx.driftVY += (Math.random() - 0.5) * 0.015 * dt;
+
+      // Mouse repulsion on helixes
+      var helixScreenX = W * hx.baseX + hx.driftX;
+      var helixScreenY = H * hx.baseY + hx.driftY;
+      var repel = mouseRepel(helixScreenX, helixScreenY, MOUSE_FORCE * 0.5);
+      hx.driftVX += repel.x * 0.1 * dt;
+      hx.driftVY += repel.y * 0.05 * dt;
+
+      // Damping
+      hx.driftVX *= Math.pow(0.98, dt);
+      hx.driftVY *= Math.pow(0.98, dt);
+
+      // Apply
+      hx.driftX += hx.driftVX * dt;
+      hx.driftY += hx.driftVY * dt;
+
+      // Soft boundary (spring-back instead of hard bounce)
+      var maxDriftX = W * 0.1;
+      var maxDriftY = 60;
+      hx.driftVX -= (hx.driftX / maxDriftX) * 0.02 * dt;
+      hx.driftVY -= (hx.driftY / maxDriftY) * 0.02 * dt;
+    }
+
+    // ── Draw DNA Helixes ──
+    for (var h = 0; h < helixes.length; h++) {
+      var hx = helixes[h];
+      var cx = W * hx.baseX + hx.driftX;
+      var cy = H * hx.baseY + hx.driftY;
+      var yOff = -(scrollY * hx.parallax) % (H * 0.5);
+      drawHelix(cx, cy, hx.angle, yOff, hx.amplitude, hx.freq, hx.phase, hx.scale, hx.opacity);
+    }
 
     // ── Floating molecules ──
     for (var m = 0; m < molecules.length; m++) {
       var mol = molecules[m];
-      mol.x += mol.vx;
-      mol.y += mol.vy;
-      mol.rotation += mol.rotSpeed;
 
-      // Wrap around
+      var mr = mouseRepel(mol.x, mol.y, MOUSE_FORCE);
+      mol.vx += mr.x * 0.04 * dt;
+      mol.vy += mr.y * 0.04 * dt;
+
+      mol.vy -= scrollVel * 0.002 * dt;
+
+      var speed = Math.sqrt(mol.vx * mol.vx + mol.vy * mol.vy);
+      if (speed > 1.2) {
+        mol.vx = (mol.vx / speed) * 1.2;
+        mol.vy = (mol.vy / speed) * 1.2;
+      }
+
+      mol.vx *= Math.pow(0.996, dt);
+      mol.vy *= Math.pow(0.996, dt);
+
+      mol.x += mol.vx * dt;
+      mol.y += mol.vy * dt;
+      mol.rotation += mol.rotSpeed * dt;
+
+      if (mouseActive) {
+        var mdx = mol.x - smoothMouseX;
+        var mdy = mol.y - smoothMouseY;
+        var mdist = Math.sqrt(mdx * mdx + mdy * mdy);
+        if (mdist < MOUSE_RADIUS) {
+          mol.rotation += (1 - mdist / MOUSE_RADIUS) * 0.02 * dt;
+        }
+      }
+
       if (mol.x < -80) mol.x = W + 80;
       if (mol.x > W + 80) mol.x = -80;
       if (mol.y < -80) mol.y = H + 80;
@@ -358,13 +484,28 @@
       else drawTriMol(mol.x, mol.y, mol.size, mol.rotation, mol.opacity);
     }
 
-    // ── Atomic network (atoms + bonds) ──
-    // Update atoms
+    // ── Atomic network ──
     for (var i = 0; i < atoms.length; i++) {
       var a = atoms[i];
-      a.x += a.vx;
-      a.y += a.vy;
-      a.pulse += 0.01;
+
+      var ar = mouseRepel(a.x, a.y, MOUSE_FORCE);
+      a.vx += ar.x * 0.03 * dt;
+      a.vy += ar.y * 0.03 * dt;
+
+      a.vy -= scrollVel * 0.0015 * dt;
+
+      var aspeed = Math.sqrt(a.vx * a.vx + a.vy * a.vy);
+      if (aspeed > 1.0) {
+        a.vx = (a.vx / aspeed) * 1.0;
+        a.vy = (a.vy / aspeed) * 1.0;
+      }
+
+      a.vx *= Math.pow(0.998, dt);
+      a.vy *= Math.pow(0.998, dt);
+
+      a.x += a.vx * dt;
+      a.y += a.vy * dt;
+      a.pulse += 0.008 * dt;
 
       if (a.x < -10) a.x = W + 10;
       if (a.x > W + 10) a.x = -10;
@@ -387,7 +528,6 @@
           ctx.lineWidth = 0.7;
           ctx.stroke();
 
-          // Double bond effect on close pairs
           if (dist < BOND_DIST * 0.4) {
             var perpX = -dy / dist * 2.5;
             var perpY = dx / dist * 2.5;
@@ -407,20 +547,17 @@
       var a = atoms[i];
       var pulseR = a.r + Math.sin(a.pulse) * 0.5;
 
-      // Atom
       ctx.beginPath();
       ctx.arc(a.x, a.y, pulseR, 0, Math.PI * 2);
       ctx.fillStyle = BLUE_DEEP + a.opacity + ')';
       ctx.fill();
 
-      // Electron cloud glow on larger atoms
       if (a.r > 2.5) {
         ctx.beginPath();
         ctx.arc(a.x, a.y, pulseR + 5, 0, Math.PI * 2);
         ctx.fillStyle = BLUE_LIGHT + '0.02)';
         ctx.fill();
 
-        // Electron orbit ring
         ctx.beginPath();
         ctx.ellipse(a.x, a.y, pulseR + 7, pulseR + 3, a.pulse * 0.5, 0, Math.PI * 2);
         ctx.strokeStyle = BLUE_MED + '0.04)';
@@ -439,6 +576,7 @@
         var t = document.documentElement.getAttribute('data-theme');
         if (t === 'academic' || t === 'executive') {
           resize();
+          createHelixes();
           createAtoms();
           createMolecules();
         }
