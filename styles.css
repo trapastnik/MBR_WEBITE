@@ -1700,11 +1700,11 @@ footer p {
 }
 
 [data-theme="academic"] #biotech-canvas {
-    opacity: 1;
+    opacity: 0.55;
 }
 
 [data-theme="executive"] #biotech-canvas {
-    opacity: 0.4;
+    opacity: 0.2;
 }
 
 /* ── Theme Toggle ── */

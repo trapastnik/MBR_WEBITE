@@ -14,6 +14,13 @@
   var ATOM_COUNT = 70;
   var BOND_DIST = 140;
 
+  // Helix drift state (random wandering)
+  var helixes = [
+    { driftX: 0, driftY: 0, driftVX: 0, driftVY: 0, baseX: 0.85 },
+    { driftX: 0, driftY: 0, driftVX: 0, driftVY: 0, baseX: 0.1 },
+    { driftX: 0, driftY: 0, driftVX: 0, driftVY: 0, baseX: 0.45 }
+  ];
+
   // Floating molecules (small rigid structures)
   var molecules = [];
   var MOL_COUNT = 6;
@@ -53,7 +60,7 @@
         r: Math.random() * 2.5 + 1,
         vx: (Math.random() - 0.5) * 0.3,
         vy: (Math.random() - 0.5) * 0.3,
-        opacity: Math.random() * 0.25 + 0.08,
+        opacity: Math.random() * 0.12 + 0.04,
         pulse: Math.random() * Math.PI * 2
       });
     }
@@ -73,7 +80,7 @@
         rotSpeed: (Math.random() - 0.5) * 0.004,
         type: type,
         size: Math.random() * 18 + 14,
-        opacity: Math.random() * 0.08 + 0.04
+        opacity: Math.random() * 0.04 + 0.02
       });
     }
   }
@@ -304,15 +311,34 @@
     ctx.clearRect(0, 0, W, H);
     time += 0.012;
 
-    // ── DNA Helixes ──
-    // Main helix (right side, prominent)
-    drawHelix(W * 0.85, 50, 0.007, 0, 1.1, 0.35);
+    // ── Update helix drift (random wandering) ──
+    for (var h = 0; h < helixes.length; h++) {
+      var hx = helixes[h];
+      // Random acceleration (brownian-like motion)
+      hx.driftVX += (Math.random() - 0.5) * 0.04;
+      hx.driftVY += (Math.random() - 0.5) * 0.02;
+      // Damping to prevent runaway
+      hx.driftVX *= 0.98;
+      hx.driftVY *= 0.98;
+      // Limit drift range
+      hx.driftX += hx.driftVX;
+      hx.driftY += hx.driftVY;
+      var maxDrift = W * 0.06;
+      if (hx.driftX > maxDrift) { hx.driftX = maxDrift; hx.driftVX *= -0.5; }
+      if (hx.driftX < -maxDrift) { hx.driftX = -maxDrift; hx.driftVX *= -0.5; }
+      if (hx.driftY > 30) { hx.driftY = 30; hx.driftVY *= -0.5; }
+      if (hx.driftY < -30) { hx.driftY = -30; hx.driftVY *= -0.5; }
+    }
+
+    // ── DNA Helixes (reduced opacity, random drift) ──
+    // Main helix (right side)
+    drawHelix(W * helixes[0].baseX + helixes[0].driftX, 50, 0.007, helixes[0].driftY, 1.1, 0.18);
 
     // Secondary helix (left side)
-    drawHelix(W * 0.1, 38, 0.009, 2.5, 0.85, 0.25);
+    drawHelix(W * helixes[1].baseX + helixes[1].driftX, 38, 0.009, 2.5 + helixes[1].driftY * 0.1, 0.85, 0.12);
 
     // Third helix (center-left)
-    drawHelix(W * 0.45, 30, 0.006, 4.8, 0.7, 0.15);
+    drawHelix(W * helixes[2].baseX + helixes[2].driftX, 30, 0.006, 4.8 + helixes[2].driftY * 0.1, 0.7, 0.08);
 
     // ── Floating molecules ──
     for (var m = 0; m < molecules.length; m++) {
@@ -353,7 +379,7 @@
         var dy = atoms[i].y - atoms[j].y;
         var dist = Math.sqrt(dx * dx + dy * dy);
         if (dist < BOND_DIST) {
-          var alpha = (1 - dist / BOND_DIST) * 0.1;
+          var alpha = (1 - dist / BOND_DIST) * 0.05;
           ctx.beginPath();
           ctx.moveTo(atoms[i].x, atoms[i].y);
           ctx.lineTo(atoms[j].x, atoms[j].y);
