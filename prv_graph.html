@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PRV Knowledge Graph | Maryana Breitman, PhD, MBA</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+<style>
+:root {
+  --bg: #1a1b2e;
+  --bg2: #222436;
+  --border: #2f3146;
+  --text: #c8cad8;
+  --muted: #6b6f8a;
+  --accent: #7c3aed;
+  --accent2: #a78bfa;
+  --accent3: #60a5fa;
+  --green: #34d399;
+  --yellow: #fbbf24;
+  --red: #f87171;
+  --pink: #f472b6;
+  --cyan: #22d3ee;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow: hidden;
+}
+body.locked > *:not(#pin-gate) { display: none !important; }
+#pin-gate {
+  position: fixed; inset: 0; z-index: 99999;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center; flex-direction: column;
+  font-family: 'Inter', -apple-system, sans-serif;
+}
+#pin-gate.hidden { display: none; }
+#pin-gate h2 { color: var(--text); font-size: 22px; margin-bottom: 8px; }
+#pin-gate p { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+#pin-gate .pin-inputs { display: flex; gap: 10px; margin-bottom: 20px; }
+#pin-gate .pin-inputs input {
+  width: 48px; height: 56px; text-align: center; font-size: 24px; font-weight: 700;
+  background: var(--bg2); border: 2px solid var(--border); border-radius: 10px;
+  color: var(--text); outline: none; caret-color: var(--accent);
+}
+#pin-gate .pin-inputs input:focus { border-color: var(--accent); }
+#pin-gate .pin-error { color: var(--red); font-size: 13px; min-height: 20px; margin-bottom: 12px; }
+#pin-gate button {
+  background: var(--accent); color: #fff; border: none; padding: 10px 32px;
+  border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;
+}
+#pin-gate button:hover { opacity: 0.85; }
+
+.site-nav { background: #151625; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 52px; border-bottom: 1px solid var(--border); position: relative; z-index: 100; }
+.site-nav-logo { font-family: 'Playfair Display', serif; font-size: 1.2rem; font-weight: 600; color: #e4e6eb; text-decoration: none; }
+.site-nav-logo span { color: #C4A265; }
+.site-nav-links { display: flex; gap: 6px; align-items: center; }
+.site-nav-links a { color: var(--muted); text-decoration: none; font-size: 12px; padding: 6px 12px; border-radius: 6px; transition: all .2s; font-weight: 500; white-space: nowrap; }
+.site-nav-links a:hover { color: #e4e6eb; background: rgba(255,255,255,.06); }
+.site-nav-links a.active { color: var(--accent2); background: rgba(124,58,237,.15); }
+.site-nav-links .sep { color: var(--border); font-size: 16px; margin: 0 2px; user-select: none; }
+.site-nav-back { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 6px; color: #e4e6eb; text-decoration: none; margin-right: 8px; transition: all .2s; }
+.site-nav-back:hover { background: rgba(255,255,255,.08); color: #C4A265; }
+
+#three-container {
+  position: fixed;
+  top: 52px; left: 0; right: 0; bottom: 0;
+}
+
+/* Tooltip */
+#tooltip {
+  position: fixed;
+  pointer-events: none;
+  background: rgba(34,36,54,0.95);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 18px;
+  font-size: 13px;
+  color: var(--text);
+  max-width: 320px;
+  z-index: 200;
+  opacity: 0;
+  transition: opacity .15s;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(0,0,0,.4);
+}
+#tooltip.visible { opacity: 1; }
+#tooltip .tt-title { font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+#tooltip .tt-type { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; opacity: .7; }
+#tooltip .tt-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+#tooltip .tt-link { font-size: 11px; color: var(--accent2); margin-top: 8px; opacity: .8; }
+
+/* Legend */
+#legend {
+  position: fixed;
+  bottom: 24px; left: 24px;
+  background: rgba(34,36,54,0.85);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 20px;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+  font-size: 12px;
+}
+#legend h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 10px; }
+.legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.legend-item:last-child { margin-bottom: 0; }
+.legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+/* Controls */
+#controls {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  display: flex; gap: 8px;
+  z-index: 100;
+}
+#controls button {
+  width: 40px; height: 40px;
+  background: rgba(34,36,54,0.85);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 18px;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  transition: all .2s;
+  display: flex; align-items: center; justify-content: center;
+}
+#controls button:hover { background: var(--accent); border-color: var(--accent); }
+
+/* Filter pills */
+#filters {
+  position: fixed;
+  top: 68px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; gap: 6px;
+  z-index: 100;
+  background: rgba(34,36,54,0.8);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 10px;
+  backdrop-filter: blur(12px);
+}
+.filter-pill {
+  padding: 5px 14px;
+  border-radius: 14px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all .2s;
+  color: var(--muted);
+  background: transparent;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.filter-pill:hover { color: var(--text); }
+.filter-pill.active { color: #fff; border-color: var(--accent); background: rgba(124,58,237,.25); }
+
+/* Hint */
+#hint {
+  position: fixed;
+  bottom: 80px; left: 50%; transform: translateX(-50%);
+  color: var(--muted); font-size: 12px;
+  z-index: 100;
+  opacity: 1;
+  transition: opacity 2s;
+  pointer-events: none;
+}
+
+@media (max-width: 768px) {
+  .site-nav { padding: 0 12px; height: 46px; }
+  .site-nav-logo { font-size: 1rem; }
+  .site-nav-links a { font-size: 11px; padding: 5px 8px; }
+  .site-nav-links .sep { display: none; }
+  #three-container { top: 46px; }
+  #filters { top: 58px; }
+  #legend { bottom: 12px; left: 12px; padding: 12px 14px; }
+  #controls { bottom: 12px; right: 12px; }
+  .filter-pill { padding: 4px 10px; font-size: 10px; }
+}
+</style>
+</head>
+<body class="locked">
+
+<div id="pin-gate">
+  <h2>PRV Knowledge Graph</h2>
+  <p>Enter your 6-digit access code</p>
+  <div class="pin-inputs">
+    <input type="tel" maxlength="1" autocomplete="off" inputmode="numeric">
+    <input type="tel" maxlength="1" autocomplete="off" inputmode="numeric">
+    <input type="tel" maxlength="1" autocomplete="off" inputmode="numeric">
+    <input type="tel" maxlength="1" autocomplete="off" inputmode="numeric">
+    <input type="tel" maxlength="1" autocomplete="off" inputmode="numeric">
+    <input type="tel" maxlength="1" autocomplete="off" inputmode="numeric">
+  </div>
+  <div class="pin-error" id="pin-error"></div>
+  <button id="pin-submit">Access Graph</button>
+</div>
+
+<script>
+(function() {
+  var inputs = document.querySelectorAll('#pin-gate .pin-inputs input');
+  inputs.forEach(function(inp, i) {
+    inp.addEventListener('input', function() {
+      if (inp.value.length === 1 && i < inputs.length - 1) inputs[i + 1].focus();
+    });
+    inp.addEventListener('keydown', function(e) {
+      if (e.key === 'Backspace' && !inp.value && i > 0) inputs[i - 1].focus();
+      if (e.key === 'Enter') document.getElementById('pin-submit').click();
+    });
+  });
+  inputs[0].focus();
+  async function sha256(str) {
+    var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+  }
+  document.getElementById('pin-submit').addEventListener('click', async function() {
+    var pin = Array.from(inputs).map(function(i) { return i.value; }).join('');
+    if (pin.length < 6) { document.getElementById('pin-error').textContent = 'Please enter all 6 digits'; return; }
+    var h = await sha256(pin);
+    if (h === 'c5b389beb081fe1e43ae92e895deca086b4eed5cf9efc7b78eebbbc9dc75c3f0') {
+      document.body.classList.remove('locked');
+      document.getElementById('pin-gate').classList.add('hidden');
+      sessionStorage.setItem('dashboard_auth', '1');
+      setTimeout(initGraph, 100);
+    } else {
+      document.getElementById('pin-error').textContent = 'Incorrect code';
+      inputs.forEach(function(i) { i.value = ''; });
+      inputs[0].focus();
+    }
+  });
+  if (sessionStorage.getItem('dashboard_auth') === '1') {
+    document.body.classList.remove('locked');
+    document.getElementById('pin-gate').classList.add('hidden');
+    setTimeout(initGraph, 100);
+  }
+})();
+</script>
+
+<div class="site-nav">
+  <a href="index.html" class="site-nav-back" title="Back to site"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg></a>
+  <a href="index.html" class="site-nav-logo">MBA<span>.</span></a>
+  <div class="site-nav-links">
+    <a href="index.html">Home</a>
+    <span class="sep">|</span>
+    <a href="oncology_dashboard_final_dvn.html">Rare Pediatric Tumors</a>
+    <span class="sep">|</span>
+    <a href="oncology_deals_dashboard.html">Oncology Deals</a>
+    <span class="sep">|</span>
+    <a href="prv_dashboard.html">PRV Dashboard</a>
+    <span class="sep">|</span>
+    <a href="prv_graph.html" class="active">PRV Graph</a>
+  </div>
+</div>
+
+<div id="three-container"></div>
+
+<div id="filters">
+  <div class="filter-pill active" data-filter="all">All</div>
+  <div class="filter-pill" data-filter="company">Companies</div>
+  <div class="filter-pill" data-filter="drug">Drugs</div>
+  <div class="filter-pill" data-filter="disease">Diseases</div>
+  <div class="filter-pill" data-filter="event">Events</div>
+  <div class="filter-pill" data-filter="program">Programs</div>
+</div>
+
+<div id="tooltip">
+  <div class="tt-type"></div>
+  <div class="tt-title"></div>
+  <div class="tt-desc"></div>
+  <div class="tt-link"></div>
+</div>
+
+<div id="legend">
+  <h4>Node Types</h4>
+  <div class="legend-item"><div class="legend-dot" style="background:#7c3aed"></div> Program / Policy</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#60a5fa"></div> Company</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#34d399"></div> Drug</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#f472b6"></div> Disease</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div> Event / Milestone</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#22d3ee"></div> Buyer</div>
+</div>
+
+<div id="controls">
+  <button id="btn-reset" title="Reset view">⟲</button>
+</div>
+
+<div id="hint">Drag to rotate &middot; Scroll to zoom &middot; Hover for details</div>
+
+<script>
+let graphInitialized = false;
+function initGraph() {
+if (graphInitialized) return;
+graphInitialized = true;
+
+try {
+
+// ========================
+// DATA
+// ========================
+const nodesData = [
+  { id: 'prv', label: 'PRV Program', type: 'program', r: 2.8, desc: 'Rare Pediatric Disease Priority Review Voucher program. Created 2012, reauthorized through Sep 2029.', url: 'https://sites.fuqua.duke.edu/priorityreviewvoucher/' },
+  { id: 'cnpv', label: 'CNPV Program', type: 'program', r: 2.0, desc: "Commissioner's National Priority Voucher. Launched Jun 2025. 15 issued, non-transferable, ultra-fast 30-60 day review.", url: 'https://www.biospace.com/fda/fda-policy-tracker-2026-priority-vouchers-questioned-prvs-return' },
+  { id: 'fda', label: 'FDA', type: 'program', r: 2.4, desc: 'US Food & Drug Administration. Administers both PRV and CNPV programs. 19% staff cut under DOGE.', url: 'https://www.fda.gov/about-fda/center-drug-evaluation-and-research-cder/priority-review' },
+
+  { id: 'bavarian', label: 'Bavarian Nordic', type: 'company', r: 1.6, desc: 'Sold PRV for $160M (Jun 2025). Chikungunya vaccine Vimkunya.', url: 'https://www.fiercepharma.com/pharma/bavarian-nordic-sells-priority-review-voucher-chikungunya-vaccine-approval-160m' },
+  { id: 'abeona', label: 'Abeona', type: 'company', r: 1.5, desc: 'Sold PRV for $155M (May 2025). Gene therapy Zevaskyn for epidermolysis bullosa.', url: 'https://www.biopharmadive.com/news/abeona-priority-review-voucher-sale-zevaskyn-epidermolysis-bullosa/747723/' },
+  { id: 'zevra', label: 'Zevra', type: 'company', r: 1.5, desc: 'Sold PRV for $150M (Feb 2025). MIPLYFFA for Niemann-Pick Type C.', url: 'https://investors.zevra.com/news-releases/news-release-details/zevra-announces-closing-sale-rare-pediatric-disease-priority' },
+  { id: 'ptc', label: 'PTC Therapeutics', type: 'company', r: 1.5, desc: 'Sold PRV for $150M (Nov 2024). KEBILIDI for AADC deficiency.', url: 'https://ir.ptcbio.com/news-releases/news-release-details/ptc-therapeutics-enters-agreement-sell-priority-review-voucher' },
+  { id: 'acadia', label: 'Acadia Pharma', type: 'company', r: 1.5, desc: 'Sold PRV for $150M (Nov 2024). DAYBUE for Rett syndrome.', url: 'https://www.biopharmadive.com/news/acadia-priority-review-voucher-sale-daybue-rett/732157/' },
+  { id: 'ipsen', label: 'Ipsen', type: 'company', r: 1.6, desc: 'Sold PRV for $158M (Aug 2024). Sohonos for FOP.', url: 'https://www.ipsen.com/update/ipsen-announces-sale-of-priority-review-voucher-for-158m-2935903/' },
+  { id: 'valneva', label: 'Valneva', type: 'company', r: 1.4, desc: 'Sold PRV for $103M (Feb 2024). IXCHIQ chikungunya vaccine.', url: 'https://valneva.com/press-release/valneva-announces-sale-of-priority-review-voucher-for-103-million/' },
+  { id: 'sarepta', label: 'Sarepta', type: 'company', r: 1.6, desc: 'Multiple PRV sales. Elevidys for Duchenne MD. $102M (Jul 2023).', url: 'https://www.sarepta.com/' },
+  { id: 'bluebird', label: 'Bluebird Bio', type: 'company', r: 1.5, desc: 'Two PRV sales: Zynteglo ($95M) and Skysona ($102M).', url: 'https://www.bluebirdbio.com/' },
+  { id: 'abbvie', label: 'AbbVie', type: 'company', r: 1.4, desc: 'Record PRV buyer: paid $350M in 2015 (all-time high).', url: 'https://www.abbvie.com/' },
+
+  { id: 'bms', label: 'Bristol Myers Squibb', type: 'buyer', r: 1.4, desc: 'Purchased PRV from Bluebird Bio. Major buyer.', url: 'https://www.bms.com/' },
+  { id: 'argenx', label: 'Argenx SE', type: 'buyer', r: 1.2, desc: 'Purchased PRV from Bluebird Bio for $102M.', url: 'https://www.argenx.com/' },
+  { id: 'gilead', label: 'Gilead', type: 'buyer', r: 1.4, desc: 'Spent $621M+ on PRV purchases. Largest known buyer by total spend.', url: 'https://www.gilead.com/' },
+
+  { id: 'vimkunya', label: 'Vimkunya', type: 'drug', r: 1.0, desc: 'Chikungunya vaccine. Bavarian Nordic. Tropical disease PRV.', url: 'https://www.fda.gov/vaccines-blood-biologics/vimkunya' },
+  { id: 'zevaskyn', label: 'Zevaskyn', type: 'drug', r: 1.0, desc: 'Gene therapy for dystrophic epidermolysis bullosa. Abeona Therapeutics.', url: 'https://www.fda.gov/news-events/press-announcements/fda-approves-first-gene-therapy-dystrophic-epidermolysis-bullosa' },
+  { id: 'miplyffa', label: 'MIPLYFFA', type: 'drug', r: 1.0, desc: 'Treatment for Niemann-Pick disease Type C. Zevra Therapeutics.', url: 'https://www.fda.gov/news-events/press-announcements/fda-approves-first-treatment-niemann-pick-disease-type-c' },
+  { id: 'kebilidi', label: 'KEBILIDI', type: 'drug', r: 1.0, desc: 'Gene therapy for AADC deficiency. PTC Therapeutics.', url: 'https://www.ptcbio.com/' },
+  { id: 'daybue', label: 'DAYBUE', type: 'drug', r: 1.0, desc: 'Treatment for Rett syndrome. Acadia Pharmaceuticals.', url: 'https://www.daybue.com/' },
+  { id: 'sohonos', label: 'Sohonos', type: 'drug', r: 1.0, desc: 'Treatment for fibrodysplasia ossificans progressiva (FOP). Ipsen.', url: 'https://www.ipsen.com/' },
+  { id: 'ixchiq', label: 'IXCHIQ', type: 'drug', r: 1.0, desc: 'First approved chikungunya vaccine. Valneva. Tropical disease PRV.', url: 'https://www.fda.gov/news-events/press-announcements/fda-approves-first-vaccine-prevent-disease-caused-chikungunya-virus' },
+  { id: 'elevidys', label: 'Elevidys', type: 'drug', r: 1.0, desc: 'Gene therapy for Duchenne muscular dystrophy. Sarepta.', url: 'https://www.elevidys.com/' },
+  { id: 'zynteglo', label: 'Zynteglo', type: 'drug', r: 1.0, desc: 'Gene therapy for beta-thalassemia. Bluebird Bio.', url: 'https://www.zynteglo.com/' },
+  { id: 'skysona', label: 'Skysona', type: 'drug', r: 1.0, desc: 'Gene therapy for cerebral adrenoleukodystrophy. Bluebird Bio.', url: 'https://www.skysona.com/' },
+
+  { id: 'chikungunya', label: 'Chikungunya', type: 'disease', r: 1.2, desc: 'Tropical mosquito-borne virus. Two PRV-earning vaccines approved.', url: 'https://www.who.int/news-room/fact-sheets/detail/chikungunya' },
+  { id: 'eb', label: 'Epidermolysis Bullosa', type: 'disease', r: 1.2, desc: 'Rare genetic skin disorder. Zevaskyn approved 2025.', url: 'https://rarediseases.org/rare-diseases/epidermolysis-bullosa/' },
+  { id: 'npc', label: 'Niemann-Pick C', type: 'disease', r: 1.2, desc: 'Rare inherited lipid storage disease. MIPLYFFA approved.', url: 'https://rarediseases.org/rare-diseases/niemann-pick-disease-type-c/' },
+  { id: 'aadc', label: 'AADC Deficiency', type: 'disease', r: 1.1, desc: 'Rare genetic neurotransmitter disorder. Gene therapy KEBILIDI.', url: 'https://rarediseases.org/rare-diseases/aadc-deficiency/' },
+  { id: 'rett', label: 'Rett Syndrome', type: 'disease', r: 1.2, desc: 'Rare genetic neurological disorder. DAYBUE first approved treatment.', url: 'https://www.rettsyndrome.org/' },
+  { id: 'fop', label: 'FOP', type: 'disease', r: 1.1, desc: 'Fibrodysplasia ossificans progressiva. Ultra-rare bone disorder.', url: 'https://www.ifopa.org/' },
+  { id: 'duchenne', label: 'Duchenne MD', type: 'disease', r: 1.3, desc: 'Duchenne muscular dystrophy. Progressive muscle disorder affecting 1 in 5,000 boys.', url: 'https://www.parentprojectmd.org/' },
+  { id: 'thal', label: 'Beta-Thalassemia', type: 'disease', r: 1.1, desc: 'Inherited blood disorder reducing hemoglobin production.', url: 'https://rarediseases.org/rare-diseases/thalassemia-major/' },
+  { id: 'cald', label: 'CALD', type: 'disease', r: 1.1, desc: 'Cerebral adrenoleukodystrophy. Fatal brain disorder in boys.', url: 'https://rarediseases.org/rare-diseases/adrenoleukodystrophy/' },
+
+  { id: 'lapse', label: 'Program Lapsed', type: 'event', r: 1.4, desc: 'Dec 20, 2024: FDA authority to grant new RPD designations expired.', url: 'https://www.biospace.com/business/rare-disease-biotechs-left-in-a-lurch-as-congress-fails-to-renew-priority-review-program' },
+  { id: 'gkca', label: 'Give Kids a Chance Act', type: 'event', r: 1.6, desc: 'H.R. 1262 / S. 932. House passed Dec 2025. Senate failed unanimous consent Dec 17.', url: 'https://www.congress.gov/bill/118th-congress/house-bill/7384/text' },
+  { id: 'reauth', label: 'Reauthorized 2029', type: 'event', r: 1.8, desc: 'Feb 3, 2026: Consolidated Appropriations Act extends PRV program through Sep 30, 2029. GAO study mandated.', url: 'https://www.spencerfane.com/insight/congress-extends-rare-pediatric-disease-priority-review-voucher-program-through-2029/' },
+  { id: 'doge', label: 'DOGE Cuts', type: 'event', r: 1.4, desc: '19% FDA staff reduction. On-time approvals dropped to 78% in H2 2025. First review delay Jun 2025.', url: 'https://www.statnews.com/2025/12/19/fda-voucher-program-political-interference/' },
+  { id: 'gao', label: 'GAO Study', type: 'event', r: 1.3, desc: 'Mandated 5-year study on PRV effectiveness. Findings will shape post-2029 legislation.', url: 'https://www.wsgr.com/en/insights/congress-reauthorizes-the-rare-pediatric-disease-priority-review-voucher-program-and-clarifies-orphan-drug-exclusivity.html' },
+  { id: 'record2024', label: '2024: Record 11 PRVs', type: 'event', r: 1.3, desc: 'Record year with 11 vouchers awarded. Expiration rush drove applications.', url: 'https://www.biospace.com/business/priority-review-vouchers-by-the-numbers' },
+  { id: 'price350', label: '$350M Record (2015)', type: 'event', r: 1.2, desc: 'AbbVie paid $350M to United Therapeutics — all-time highest PRV sale price.', url: 'https://sites.fuqua.duke.edu/priorityreviewvoucher/' },
+];
+
+const edgesData = [
+  { source: 'prv', target: 'fda' }, { source: 'cnpv', target: 'fda' }, { source: 'prv', target: 'cnpv' },
+  { source: 'bavarian', target: 'prv' }, { source: 'abeona', target: 'prv' },
+  { source: 'zevra', target: 'prv' }, { source: 'ptc', target: 'prv' },
+  { source: 'acadia', target: 'prv' }, { source: 'ipsen', target: 'prv' },
+  { source: 'valneva', target: 'prv' }, { source: 'sarepta', target: 'prv' },
+  { source: 'bluebird', target: 'prv' }, { source: 'abbvie', target: 'prv' },
+  { source: 'bms', target: 'bluebird' }, { source: 'argenx', target: 'bluebird' },
+  { source: 'gilead', target: 'prv' },
+  { source: 'bavarian', target: 'vimkunya' }, { source: 'abeona', target: 'zevaskyn' },
+  { source: 'zevra', target: 'miplyffa' }, { source: 'ptc', target: 'kebilidi' },
+  { source: 'acadia', target: 'daybue' }, { source: 'ipsen', target: 'sohonos' },
+  { source: 'valneva', target: 'ixchiq' }, { source: 'sarepta', target: 'elevidys' },
+  { source: 'bluebird', target: 'zynteglo' }, { source: 'bluebird', target: 'skysona' },
+  { source: 'vimkunya', target: 'chikungunya' }, { source: 'ixchiq', target: 'chikungunya' },
+  { source: 'zevaskyn', target: 'eb' }, { source: 'miplyffa', target: 'npc' },
+  { source: 'kebilidi', target: 'aadc' }, { source: 'daybue', target: 'rett' },
+  { source: 'sohonos', target: 'fop' }, { source: 'elevidys', target: 'duchenne' },
+  { source: 'zynteglo', target: 'thal' }, { source: 'skysona', target: 'cald' },
+  { source: 'lapse', target: 'prv' }, { source: 'gkca', target: 'prv' },
+  { source: 'reauth', target: 'prv' }, { source: 'reauth', target: 'gkca' },
+  { source: 'doge', target: 'fda' }, { source: 'gao', target: 'reauth' },
+  { source: 'gao', target: 'prv' }, { source: 'record2024', target: 'prv' },
+  { source: 'record2024', target: 'lapse' }, { source: 'price350', target: 'abbvie' },
+  { source: 'doge', target: 'cnpv' },
+];
+
+const typeColors = {
+  program: 0x7c3aed, company: 0x60a5fa, drug: 0x34d399,
+  disease: 0xf472b6, event: 0xfbbf24, buyer: 0x22d3ee,
+};
+const typeColorsCSS = {
+  program: '#7c3aed', company: '#60a5fa', drug: '#34d399',
+  disease: '#f472b6', event: '#fbbf24', buyer: '#22d3ee',
+};
+
+// ========================
+// THREE.JS SETUP
+// ========================
+const container = document.getElementById('three-container');
+let W = container.clientWidth || window.innerWidth;
+let H = container.clientHeight || (window.innerHeight - 52);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x1a1b2e, 0.006);
+
+const camera = new THREE.PerspectiveCamera(60, W / H, 0.1, 1000);
+camera.position.set(0, 0, 80);
+
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'default', failIfMajorPerformanceCaveat: false });
+} catch(e) {
+  container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#6b6f8a;font-size:16px;text-align:center;padding:40px;">WebGL is not supported in this browser.<br>Please try Chrome or Firefox.</div>';
+  return;
+}
+renderer.setSize(W, H);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setClearColor(0x1a1b2e);
+container.appendChild(renderer.domElement);
+
+// Ambient particles
+const starGeo = new THREE.BufferGeometry();
+const starCount = 400;
+const starPos = new Float32Array(starCount * 3);
+for (let i = 0; i < starCount * 3; i++) starPos[i] = (Math.random() - 0.5) * 200;
+starGeo.setAttribute('position', new THREE.BufferAttribute(starPos, 3));
+const starMat = new THREE.PointsMaterial({ color: 0x4a4a6a, size: 0.15, transparent: true, opacity: 0.6 });
+scene.add(new THREE.Points(starGeo, starMat));
+
+// ========================
+// NODE POSITIONS (3D force layout)
+// ========================
+const nodeMap = {};
+nodesData.forEach((n, i) => {
+  // Spread nodes in a sphere
+  const phi = Math.acos(-1 + (2 * i) / nodesData.length);
+  const theta = Math.sqrt(nodesData.length * Math.PI) * phi;
+  const spread = 35;
+  n.x = spread * Math.cos(theta) * Math.sin(phi) + (Math.random() - 0.5) * 8;
+  n.y = spread * Math.sin(theta) * Math.sin(phi) + (Math.random() - 0.5) * 8;
+  n.z = spread * Math.cos(phi) + (Math.random() - 0.5) * 8;
+  n.vx = 0; n.vy = 0; n.vz = 0;
+  nodeMap[n.id] = n;
+});
+
+// Resolve edges
+edgesData.forEach(e => {
+  e.srcNode = nodeMap[e.source];
+  e.tgtNode = nodeMap[e.target];
+});
+
+// ========================
+// CREATE 3D OBJECTS
+// ========================
+const nodeMeshes = [];
+const glowMeshes = [];
+const nodeGroup = new THREE.Group();
+scene.add(nodeGroup);
+
+nodesData.forEach(n => {
+  // Sphere
+  const geo = new THREE.SphereGeometry(n.r, 24, 24);
+  const mat = new THREE.MeshPhongMaterial({
+    color: typeColors[n.type],
+    emissive: typeColors[n.type],
+    emissiveIntensity: 0.4,
+    shininess: 80,
+    transparent: true,
+    opacity: 0.9,
+  });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.set(n.x, n.y, n.z);
+  mesh.userData = n;
+  nodeGroup.add(mesh);
+  nodeMeshes.push(mesh);
+  n.mesh = mesh;
+
+  // Glow sphere (larger, transparent)
+  const glowGeo = new THREE.SphereGeometry(n.r * 2.2, 16, 16);
+  const glowMat = new THREE.MeshBasicMaterial({
+    color: typeColors[n.type],
+    transparent: true,
+    opacity: 0.08,
+    depthWrite: false,
+    side: THREE.BackSide,
+  });
+  const glowMesh = new THREE.Mesh(glowGeo, glowMat);
+  glowMesh.position.copy(mesh.position);
+  nodeGroup.add(glowMesh);
+  glowMeshes.push(glowMesh);
+  n.glow = glowMesh;
+});
+
+// Edge lines
+const edgeGroup = new THREE.Group();
+scene.add(edgeGroup);
+const edgeLines = [];
+
+edgesData.forEach(e => {
+  const geo = new THREE.BufferGeometry();
+  const positions = new Float32Array(6);
+  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  const mat = new THREE.LineBasicMaterial({
+    color: 0xa78bfa,
+    transparent: true,
+    opacity: 0.12,
+    depthWrite: false,
+  });
+  const line = new THREE.Line(geo, mat);
+  edgeGroup.add(line);
+  edgeLines.push({ line, edge: e });
+});
+
+// Labels (HTML overlay via CSS2D-like approach using divs)
+const labelContainer = document.createElement('div');
+labelContainer.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:hidden;';
+container.appendChild(labelContainer);
+
+const labels = [];
+nodesData.forEach(n => {
+  const div = document.createElement('div');
+  div.textContent = n.label;
+  div.style.cssText = `position:absolute;color:#e4e6eb;font-size:${n.r >= 2 ? 11 : 10}px;font-weight:${n.r >= 2 ? 600 : 500};font-family:Inter,sans-serif;white-space:nowrap;text-shadow:0 0 8px rgba(0,0,0,.9),0 0 3px rgba(0,0,0,.7);pointer-events:none;transform:translate(-50%,4px);transition:opacity .2s;`;
+  labelContainer.appendChild(div);
+  labels.push({ div, node: n });
+});
+
+// Lights
+scene.add(new THREE.AmbientLight(0x334155, 0.6));
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+dirLight.position.set(50, 50, 50);
+scene.add(dirLight);
+const pointLight = new THREE.PointLight(0x7c3aed, 1, 150);
+pointLight.position.set(0, 0, 40);
+scene.add(pointLight);
+
+// ========================
+// 3D FORCE SIMULATION
+// ========================
+function simulate3D() {
+  const repulsion = 300;
+  const springLen = 16;
+  const springK = 0.008;
+  const centerK = 0.003;
+  const damping = 0.88;
+
+  nodesData.forEach(n => {
+    n.vx += -n.x * centerK;
+    n.vy += -n.y * centerK;
+    n.vz += -n.z * centerK;
+  });
+
+  for (let i = 0; i < nodesData.length; i++) {
+    for (let j = i + 1; j < nodesData.length; j++) {
+      const a = nodesData[i], b = nodesData[j];
+      let dx = b.x - a.x, dy = b.y - a.y, dz = b.z - a.z;
+      let dist = Math.sqrt(dx*dx + dy*dy + dz*dz) || 1;
+      let force = repulsion / (dist * dist);
+      let fx = (dx/dist)*force, fy = (dy/dist)*force, fz = (dz/dist)*force;
+      a.vx -= fx; a.vy -= fy; a.vz -= fz;
+      b.vx += fx; b.vy += fy; b.vz += fz;
+    }
+  }
+
+  edgesData.forEach(e => {
+    const a = e.srcNode, b = e.tgtNode;
+    let dx = b.x - a.x, dy = b.y - a.y, dz = b.z - a.z;
+    let dist = Math.sqrt(dx*dx + dy*dy + dz*dz) || 1;
+    let force = (dist - springLen) * springK;
+    let fx = (dx/dist)*force, fy = (dy/dist)*force, fz = (dz/dist)*force;
+    a.vx += fx; a.vy += fy; a.vz += fz;
+    b.vx -= fx; b.vy -= fy; b.vz -= fz;
+  });
+
+  nodesData.forEach(n => {
+    n.vx *= damping; n.vy *= damping; n.vz *= damping;
+    n.x += n.vx; n.y += n.vy; n.z += n.vz;
+    n.mesh.position.set(n.x, n.y, n.z);
+    n.glow.position.set(n.x, n.y, n.z);
+  });
+}
+
+// ========================
+// ORBIT CONTROLS (manual)
+// ========================
+let spherical = { theta: 0, phi: Math.PI / 2, radius: 80 };
+let targetSpherical = { theta: 0, phi: Math.PI / 2, radius: 80 };
+let isDragging = false;
+let lastMouse = { x: 0, y: 0 };
+let autoRotate = true;
+
+function updateCamera() {
+  spherical.theta += (targetSpherical.theta - spherical.theta) * 0.08;
+  spherical.phi += (targetSpherical.phi - spherical.phi) * 0.08;
+  spherical.radius += (targetSpherical.radius - spherical.radius) * 0.08;
+
+  const r = spherical.radius;
+  const t = spherical.theta;
+  const p = spherical.phi;
+  camera.position.set(
+    r * Math.sin(p) * Math.cos(t),
+    r * Math.cos(p),
+    r * Math.sin(p) * Math.sin(t)
+  );
+  camera.lookAt(0, 0, 0);
+}
+
+const el = renderer.domElement;
+
+let mouseDownPos = { x: 0, y: 0 };
+
+el.addEventListener('mousedown', e => {
+  isDragging = true;
+  autoRotate = false;
+  lastMouse = { x: e.clientX, y: e.clientY };
+  mouseDownPos = { x: e.clientX, y: e.clientY };
+  el.style.cursor = 'grabbing';
+});
+
+el.addEventListener('mousemove', e => {
+  if (isDragging) {
+    const dx = e.clientX - lastMouse.x;
+    const dy = e.clientY - lastMouse.y;
+    targetSpherical.theta -= dx * 0.005;
+    targetSpherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, targetSpherical.phi - dy * 0.005));
+    lastMouse = { x: e.clientX, y: e.clientY };
+  } else {
+    handleHover(e);
+  }
+});
+
+el.addEventListener('mouseup', e => {
+  const dx = e.clientX - mouseDownPos.x;
+  const dy = e.clientY - mouseDownPos.y;
+  const wasDrag = Math.sqrt(dx*dx + dy*dy) > 5;
+  isDragging = false;
+  el.style.cursor = 'grab';
+  // Click (not drag) — open URL
+  if (!wasDrag && hoveredNode && hoveredNode.url) {
+    window.open(hoveredNode.url, '_blank');
+  }
+});
+el.addEventListener('mouseleave', () => {
+  isDragging = false;
+  hoveredNode = null;
+  document.getElementById('tooltip').classList.remove('visible');
+});
+el.style.cursor = 'grab';
+
+el.addEventListener('wheel', e => {
+  e.preventDefault();
+  targetSpherical.radius = Math.max(20, Math.min(200, targetSpherical.radius + e.deltaY * 0.05));
+}, { passive: false });
+
+// Touch support
+let lastTouchDist = 0;
+let lastTouch = { x: 0, y: 0 };
+
+el.addEventListener('touchstart', e => {
+  if (e.touches.length === 1) {
+    isDragging = true;
+    autoRotate = false;
+    lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  } else if (e.touches.length === 2) {
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
+    lastTouchDist = Math.sqrt(dx*dx + dy*dy);
+  }
+  e.preventDefault();
+}, { passive: false });
+
+el.addEventListener('touchmove', e => {
+  if (e.touches.length === 1 && isDragging) {
+    const dx = e.touches[0].clientX - lastTouch.x;
+    const dy = e.touches[0].clientY - lastTouch.y;
+    targetSpherical.theta -= dx * 0.005;
+    targetSpherical.phi = Math.max(0.1, Math.min(Math.PI - 0.1, targetSpherical.phi - dy * 0.005));
+    lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  } else if (e.touches.length === 2) {
+    const dx = e.touches[0].clientX - e.touches[1].clientX;
+    const dy = e.touches[0].clientY - e.touches[1].clientY;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    if (lastTouchDist) {
+      targetSpherical.radius = Math.max(20, Math.min(200, targetSpherical.radius * (lastTouchDist / dist)));
+    }
+    lastTouchDist = dist;
+  }
+  e.preventDefault();
+}, { passive: false });
+
+el.addEventListener('touchend', () => { isDragging = false; lastTouchDist = 0; });
+
+// ========================
+// HOVER / RAYCASTING
+// ========================
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+let hoveredNode = null;
+
+function handleHover(e) {
+  const rect = container.getBoundingClientRect();
+  mouse.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObjects(nodeMeshes);
+
+  const tooltip = document.getElementById('tooltip');
+  if (hits.length > 0) {
+    const n = hits[0].object.userData;
+    if (!isVisible(n)) { hoveredNode = null; tooltip.classList.remove('visible'); return; }
+    hoveredNode = n;
+    tooltip.querySelector('.tt-type').textContent = n.type;
+    tooltip.querySelector('.tt-type').style.color = typeColorsCSS[n.type];
+    tooltip.querySelector('.tt-title').textContent = n.label;
+    tooltip.querySelector('.tt-desc').textContent = n.desc;
+    tooltip.querySelector('.tt-link').textContent = n.url ? 'Click to open source →' : '';
+    tooltip.classList.add('visible');
+    let tx = e.clientX + 16, ty = e.clientY + 16;
+    if (tx + 320 > window.innerWidth) tx = e.clientX - 336;
+    tooltip.style.left = tx + 'px';
+    tooltip.style.top = ty + 'px';
+    el.style.cursor = 'pointer';
+  } else {
+    hoveredNode = null;
+    tooltip.classList.remove('visible');
+    if (!isDragging) el.style.cursor = 'grab';
+  }
+}
+
+// ========================
+// FILTER
+// ========================
+let activeFilters = new Set(['all']);
+
+function isVisible(node) {
+  if (activeFilters.has('all')) return true;
+  return activeFilters.has(node.type);
+}
+
+document.querySelectorAll('.filter-pill').forEach(pill => {
+  pill.addEventListener('click', () => {
+    const f = pill.dataset.filter;
+    if (f === 'all') {
+      // Reset to all
+      activeFilters.clear();
+      activeFilters.add('all');
+      document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+    } else {
+      // Toggle this filter; remove 'all' if present
+      activeFilters.delete('all');
+      document.querySelector('.filter-pill[data-filter="all"]').classList.remove('active');
+      if (activeFilters.has(f)) {
+        activeFilters.delete(f);
+        pill.classList.remove('active');
+        // If nothing selected, go back to 'all'
+        if (activeFilters.size === 0) {
+          activeFilters.add('all');
+          document.querySelector('.filter-pill[data-filter="all"]').classList.add('active');
+        }
+      } else {
+        activeFilters.add(f);
+        pill.classList.add('active');
+      }
+    }
+    updateVisibility();
+  });
+});
+
+function updateVisibility() {
+  // Build connected set for current filter
+  const visibleIds = new Set();
+  nodesData.forEach(n => { if (isVisible(n)) visibleIds.add(n.id); });
+
+  nodeMeshes.forEach((mesh, i) => {
+    const n = nodesData[i];
+    const vis = visibleIds.has(n.id);
+    mesh.visible = vis;
+    glowMeshes[i].visible = vis;
+    labels[i].div.style.display = vis ? '' : 'none';
+  });
+
+  edgeLines.forEach(el => {
+    const e = el.edge;
+    el.line.visible = visibleIds.has(e.source) && visibleIds.has(e.target);
+  });
+}
+
+// Reset button
+document.getElementById('btn-reset').addEventListener('click', () => {
+  targetSpherical = { theta: 0, phi: Math.PI / 2, radius: 80 };
+  autoRotate = true;
+});
+
+// ========================
+// ANIMATION LOOP
+// ========================
+let time = 0;
+let settled = false;
+
+function animate() {
+  requestAnimationFrame(animate);
+  time += 0.016;
+
+  // Run physics for first ~8 seconds to settle
+  if (time < 8) {
+    simulate3D();
+    // Update edge positions
+    edgeLines.forEach(el => {
+      const e = el.edge;
+      const pos = el.line.geometry.attributes.position.array;
+      pos[0] = e.srcNode.x; pos[1] = e.srcNode.y; pos[2] = e.srcNode.z;
+      pos[3] = e.tgtNode.x; pos[4] = e.tgtNode.y; pos[5] = e.tgtNode.z;
+      el.line.geometry.attributes.position.needsUpdate = true;
+    });
+  } else if (!settled) {
+    settled = true;
+    // Final edge update
+    edgeLines.forEach(el => {
+      const e = el.edge;
+      const pos = el.line.geometry.attributes.position.array;
+      pos[0] = e.srcNode.x; pos[1] = e.srcNode.y; pos[2] = e.srcNode.z;
+      pos[3] = e.tgtNode.x; pos[4] = e.tgtNode.y; pos[5] = e.tgtNode.z;
+      el.line.geometry.attributes.position.needsUpdate = true;
+    });
+  }
+
+  // Auto rotate
+  if (autoRotate) {
+    targetSpherical.theta += 0.002;
+  }
+
+  // Glow pulse
+  glowMeshes.forEach((g, i) => {
+    g.material.opacity = 0.06 + 0.05 * Math.sin(time * 2 + i * 0.5);
+    g.position.copy(nodesData[i].mesh.position);
+  });
+
+  // Hover highlighting
+  if (hoveredNode) {
+    const connIds = new Set([hoveredNode.id]);
+    edgesData.forEach(e => {
+      if (e.source === hoveredNode.id || e.target === hoveredNode.id) {
+        connIds.add(e.source); connIds.add(e.target);
+      }
+    });
+    nodeMeshes.forEach((mesh, i) => {
+      const n = nodesData[i];
+      if (!isVisible(n)) return;
+      const conn = connIds.has(n.id);
+      mesh.material.opacity = conn ? 1 : 0.15;
+      mesh.material.emissiveIntensity = conn ? 0.7 : 0.1;
+      labels[i].div.style.opacity = conn ? '1' : '0.15';
+    });
+    edgeLines.forEach(el => {
+      const e = el.edge;
+      const conn = connIds.has(e.source) && connIds.has(e.target);
+      el.line.material.opacity = conn ? 0.6 : 0.03;
+    });
+  } else {
+    nodeMeshes.forEach((mesh, i) => {
+      if (!isVisible(nodesData[i])) return;
+      mesh.material.opacity = 0.9;
+      mesh.material.emissiveIntensity = 0.4;
+      labels[i].div.style.opacity = '1';
+    });
+    edgeLines.forEach(el => { el.line.material.opacity = 0.12; });
+  }
+
+  updateCamera();
+
+  // Update label positions (project 3D → 2D)
+  labels.forEach(l => {
+    const n = l.node;
+    if (!isVisible(n)) return;
+    const v = new THREE.Vector3(n.x, n.y - n.r - 0.5, n.z);
+    v.project(camera);
+    const x = (v.x * 0.5 + 0.5) * W;
+    const y = (-v.y * 0.5 + 0.5) * H;
+    l.div.style.left = x + 'px';
+    l.div.style.top = y + 'px';
+    // Hide labels behind camera
+    l.div.style.display = (v.z > 1 || !isVisible(n)) ? 'none' : '';
+    // Scale opacity by distance
+    const dist = camera.position.distanceTo(new THREE.Vector3(n.x, n.y, n.z));
+    l.div.style.opacity = Math.max(0, Math.min(1, 1 - (dist - 30) / 120));
+  });
+
+  renderer.render(scene, camera);
+}
+
+animate();
+
+// Hide hint after 5 seconds
+setTimeout(() => {
+  const hint = document.getElementById('hint');
+  if (hint) hint.style.opacity = '0';
+}, 5000);
+
+// Resize
+window.addEventListener('resize', () => {
+  const w = container.clientWidth;
+  const h = container.clientHeight;
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
+});
+
+} catch(err) {
+  console.error('Graph init error:', err);
+  document.getElementById('three-container').innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#6b6f8a;font-size:14px;text-align:center;padding:40px;">Error loading 3D graph.<br>Please try a different browser.</div>';
+}
+} // end initGraph
+</script>
+
+</body>
+</html>
