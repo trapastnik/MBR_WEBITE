@@ -31,7 +31,7 @@ body {
   min-height: 100vh;
   overflow: hidden;
 }
-body.locked > *:not(#pin-gate) { display: none !important; }
+body.locked > *:not(#pin-gate) { visibility: hidden !important; pointer-events: none !important; }
 #pin-gate {
   position: fixed; inset: 0; z-index: 99999;
   background: var(--bg);
@@ -227,7 +227,7 @@ body.locked > *:not(#pin-gate) { display: none !important; }
       document.body.classList.remove('locked');
       document.getElementById('pin-gate').classList.add('hidden');
       sessionStorage.setItem('dashboard_auth', '1');
-      setTimeout(initGraph, 100);
+      setTimeout(function(){ if(typeof initGraph==='function') initGraph(); }, 200);
     } else {
       document.getElementById('pin-error').textContent = 'Incorrect code';
       inputs.forEach(function(i) { i.value = ''; });
@@ -237,7 +237,7 @@ body.locked > *:not(#pin-gate) { display: none !important; }
   if (sessionStorage.getItem('dashboard_auth') === '1') {
     document.body.classList.remove('locked');
     document.getElementById('pin-gate').classList.add('hidden');
-    setTimeout(initGraph, 100);
+    setTimeout(function(){ if(typeof initGraph==='function') initGraph(); }, 200);
   }
 })();
 </script>
@@ -286,8 +286,15 @@ body.locked > *:not(#pin-gate) { display: none !important; }
 
 <script>
 let graphInitialized = false;
+let graphInitAttempts = 0;
 function initGraph() {
 if (graphInitialized) return;
+var c = document.getElementById('three-container');
+if ((!c || c.clientWidth === 0 || c.clientHeight === 0) && graphInitAttempts < 20) {
+  graphInitAttempts++;
+  setTimeout(initGraph, 150);
+  return;
+}
 graphInitialized = true;
 
 try {
@@ -900,6 +907,11 @@ window.addEventListener('resize', () => {
   document.getElementById('three-container').innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#6b6f8a;font-size:14px;text-align:center;padding:40px;">Error loading 3D graph.<br>Please try a different browser.</div>';
 }
 } // end initGraph
+
+// Fallback: if PIN was already passed but initGraph hasn't run yet
+if (sessionStorage.getItem('dashboard_auth') === '1' && !graphInitialized) {
+  initGraph();
+}
 </script>
 
 </body>
